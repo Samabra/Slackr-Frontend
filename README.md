@@ -1,5 +1,5 @@
 ## 0. Change Log
-N/A
+1021 - Update the pre-commit script and update 2.2.2 on defining the way to trigger the create channel button
 
 # Assessment 3 - Vanilla JS: Slackr
 
