@@ -13,9 +13,13 @@ const registerEmail = (email, name, password) => {
             name: name,
             password: password,
         })
-    });
-    console.log(email, name, password);
-}
+    })
+        .then((res) => res.text())
+        .then((data) => {
+            console.log('data', JSON.parse(data));
+            localStorage.setItem('token', token)
+        })
+};
 
 
 
