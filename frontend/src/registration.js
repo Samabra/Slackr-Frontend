@@ -1,21 +1,25 @@
 import { BACKEND_PORT } from './config.js';
 
+const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
 const registerEmail = (email, name, password) => {
-    fetch('http://localhost:5005/auth/register', {
+    fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
-        body: {
+        headers: {
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify({
             email: email,
             name: name,
             password: password,
-        }
+        })
     });
     console.log(email, name, password);
 }
 
 
 
-document.getElementbyId('register-submit').addEventListener('click', () => {
+document.getElementById('register-submit').addEventListener('click', () => {
     const email = document.getElementById('register-email').value;
     const name = document.getElementById('register-name').value;
     const password = document.getElementById('register-password').value;
