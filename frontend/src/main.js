@@ -4,4 +4,29 @@ import { fileToDataUrl } from './helpers.js';
 
 import { renderLogin } from './screens/login.js'
 
-export const mount = document.getElementById('app');
+
+const mount = document.getElementById('app');
+
+const routes = {
+    login: renderLogin,
+};
+
+c
+function go(name) {
+    mount.innerHTML = '';
+
+    const protectedScreens = new Set(['home']);
+
+    if (!token && protectedScreens.has(name)) {
+        name = 'login';
+    }
+    const screen = routes[name];
+    screen({ mount, go });
+}
+
+const token = localStorage.getItem('slackr_token');
+if (token) {
+    go('home');
+} else {
+    go('login')
+}

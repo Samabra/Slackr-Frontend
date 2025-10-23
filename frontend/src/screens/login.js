@@ -1,22 +1,21 @@
 import { BACKEND_PORT } from '../config.js';
 
-
-export function renderLogin({ mount, go, api }) {
+const API_BASE = `http://localhost:${BACKEND_PORT}`;
+export function renderLogin({ mount, go }) {
     mount.innerHTML = `
     <h2>Login</h2>
     Email: <input type="text" id="login-user" />
     Password: <input type="password" id="login-password" />
     <button id="login-button">Login</button>
     `
-    const API_BASE = `http://localhost:${BACKEND_PORT}`;
-    mount.querySelector('login-button').addEventListener('click', () => {
-        const email = mount.querySelector('login-user').value;
-        const password = mount.querySelector('login-password').value;
+    mount.querySelector('#login-button').addEventListener('click', () => {
+        const email = mount.querySelector('#login-user').value;
+        const password = mount.querySelector('#login-password').value;
     });
     validateLogin(email, password, mount, go)
-}
+};
 
-const validateLogin = (username, password) => {
+const validateLogin = (email, password, mount, go) => {
     fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
@@ -31,6 +30,9 @@ const validateLogin = (username, password) => {
         .then(({ ok, data }) => {
             if (!ok) throw new Error(data.error || 'Login failed');
             localStorage.setItem('slackr_token', data.token);
-
+            go('home');
         })
-}
+        .catch(err => {
+            mount.querySelector('#error').textContent = err.message;
+        });
+};
