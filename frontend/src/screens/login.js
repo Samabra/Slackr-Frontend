@@ -2,7 +2,7 @@ import { BACKEND_PORT } from '../config.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 export function renderLogin({ mount, go }) {
-
+    console.log('I am at renderLogin');
     const loginTitle = document.createElement('h2');
     loginTitle.innerText = 'Login';
 
@@ -24,6 +24,10 @@ export function renderLogin({ mount, go }) {
     loginButton.innerText = 'Login';
     loginButton.id = 'login-button';
 
+    const errorMsg = document.createElement('p');
+    errorMsg.id = 'error';
+    errorMsg.style.color = 'red';
+
     mount.appendChild(loginTitle);
     mount.appendChild(emailLabel);
     mount.appendChild(emailInput);
@@ -34,9 +38,16 @@ export function renderLogin({ mount, go }) {
     mount.appendChild(loginButton);
 
     loginButton.addEventListener('click', () => {
-        const email = mount.querySelector('#login-user').value;
-        const password = mount.querySelector('#login-password').value;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+            errorMsg.innerText = 'Email or password required.';
+            return;
+        }
     });
+
+    errorMsg.innerText = '';
     validateLogin(email, password, mount, go)
 };
 
