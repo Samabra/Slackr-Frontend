@@ -2,6 +2,16 @@ import { BACKEND_PORT } from '../config.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 export function renderLogin({ mount, go }) {
+
+    const loginTitle = document.createElement('h2');
+    loginTitle.innerText = 'Login';
+
+    const emailLabel = document.createElement('label');
+    emailLabel.innerText = 'Email';
+    const emailInput = document.createElement('input');
+    emailInput.type = 'text';
+    emailInput.id = 'login-user'
+    
     mount.innerHTML = `
     <h2>Login</h2>
     Email: <input type="text" id="login-user" />

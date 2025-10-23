@@ -13,7 +13,9 @@ const routes = {
 
 c
 function go(name) {
-    mount.innerHTML = '';
+    while (mount.firstChild) {
+        mount.removeChild(mount.firstChild);
+    }
 
     const protectedScreens = new Set(['home']);
 
@@ -21,7 +23,9 @@ function go(name) {
         name = 'login';
     }
     const screen = routes[name];
-    screen({ mount, go });
+    if (screen) {
+        screen({ mount, go });
+    }
 }
 
 const token = localStorage.getItem('slackr_token');
