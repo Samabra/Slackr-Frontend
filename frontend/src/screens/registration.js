@@ -1,37 +1,71 @@
-import { BACKEND_PORT } from './config.js';
-
-// A helper you may want to use when uploading new images to the server.
-
-import { fileToDataUrl } from './helpers.js';
-import { renderLogin } from './screens/login.js'
-
-  const mount = document.querySelector('[role="main"]');
+import { BACKEND_PORT } from '../config.js';
 
   
 
-const routes = {
-    login: renderLogin,
-};
+const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
-  
-  
+export function renderRegistration({ mount, go }) {
 
-function go(name) {
-    while (mount.firstChild) {
-        mount.removeChild(mount.firstChild);
-    }   
+    const registerTitle = document.createElement('h2');
+    registerTitle.innerText = 'Sign Up';
 
-    const token = localStorage.getItem('token');
-    const protectedScreen = new Set(['home']);
-    if (!token && protectedScreen.has(name)) {
-        name = 'login';
-    }
-    const screen = routes[name];
+    const registerEmailLabel = document.createElement('label');
+    registerEmailLabel.innerText = 'Email:';
 
-    if (screen) {
-        screen({ mount, go });
-    }
+    const registerEmailInput = document.createElement('input');
+    registerEmailInput.type = 'text';
+    registerEmailInput.id = 'register-email';
 
+    const registerNameLabel = document.createElement('label');
+    registerNameLabel.innerText = 'Name:';
+
+    const registerNameInput = document.createElement('input');
+    registerNameInput.type = 'text';
+    registerNameInput.id = 'register-name';
+
+    const registerPasswordLabel = document.createElement('label');
+    registerPasswordLabel.innerText = 'Password:';
+
+    const registerPasswordInput = document.createElement('input');
+    registerPasswordInput.type = 'password';
+    registerPasswordInput.id = 'register-password';
+
+    const registerPasswordConfirmLabel = document.createElement('label');
+    registerPasswordConfirmLabel.innerText = 'Confirm Password:';
+
+    const registerPasswordConfirm = document.createElement('input');
+    registerPasswordConfirm.type = 'password';
+    registerPasswordConfirm.id = 'register-password-confirm';
+
+    const registerButton = document.createElement('button');
+    registerButton.innerText = 'Sign Up Now';
+
+    const errorMsg = document.createElement('p');
+    errorMsg.id = 'error';
+    errorMsg.style.color = 'red';
+    
+    mount.appendChild(registerTitle);
+    mount.appendChild(registerEmailLabel);
+    mount.appendChild(registerEmailInput);
+    mount.appendChild(document.createElement('br'));
+    mount.appendChild(registerNameLabel);
+    mount.appendChild(registerNameInput);
+    mount.appendChild(document.createElement('br'));
+    mount.appendChild(registerPasswordLabel);
+    mount.appendChild(registerPasswordInput);
+    mount.appendChild(document.createElement('br'));
+    mount.appendChild(registerPasswordConfirmLabel);
+    mount.appendChild(registerPasswordConfirm);
+    mount.appendChild(errorMsg);
+    registerButton.addEventListener('click', () => {
+        const email = registerEmailInput.value.trim();
+        const name = registerNameInput.value.trim();
+        const password = registerPasswordInput.value.trim();
+        const passwordConfirm = registerPasswordConfirm.value.trim();
+
+        if (password !== passwordConfirm) {
+            errorMsg.innerText = 'Passwords are not the same';
+            return;
+        }
+    })
 }
-
-go('login');
