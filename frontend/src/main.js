@@ -16,15 +16,17 @@ function go(name) {
     while (mount.firstChild) {
         mount.removeChild(mount.firstChild);
     }
-    
-    if (name === 'login') {
-        renderLogin({ mount, go });
+    const token = localStorage.getItem('token');
+    const protectedScreen = new Set(['home']);
+    if (!token && protectedScreen.has(name)) {
+        name = 'login';
+    }
+
+    const screen = routes[name];
+    if (screen) {
+        screen({ mount, go });
     }
 }
 
 
-const token = localStorage.getItem('slackr_token');
-if (token) {
-    go('login');
-}
-
+go('login');

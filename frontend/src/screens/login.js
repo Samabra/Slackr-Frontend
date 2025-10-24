@@ -36,6 +36,7 @@ export function renderLogin({ mount, go }) {
     mount.appendChild(passwordInput);
     mount.appendChild(document.createElement('br'));
     mount.appendChild(loginButton);
+    mount.appendChild(errorMsg);
 
     loginButton.addEventListener('click', () => {
         const email = emailInput.value.trim();
@@ -45,10 +46,9 @@ export function renderLogin({ mount, go }) {
             errorMsg.innerText = 'Email or password required.';
             return;
         }
+        errorMsg.innerText = '';
+        validateLogin(email, password, mount, go)
     });
-
-    errorMsg.innerText = '';
-    validateLogin(email, password, mount, go)
 };
 
 const validateLogin = (email, password, mount, go) => {
@@ -62,13 +62,16 @@ const validateLogin = (email, password, mount, go) => {
             password: password,
         })
     })
-        .then((res) => res.json().then(data => ({ ok: res.ok, data })))
-        .then(({ ok, data }) => {
-            if (!ok) throw new Error(data.error || 'Login failed');
-            localStorage.setItem('slackr_token', data.token);
+        .then((res) => res.text())
+        .then((data) => {
+            const decoded = JSON.parse(data);
+            localStorage.setItem('token', decoded.token);
             go('home');
         })
-        .catch(err => {
-            mount.querySelector('#error').textContent = err.message;
+        .catch((err) => {
+            const p = mount.querySelector('#error');
+            if (p) {
+                p.innerText = err.message || 'Login Failed'
+            }
         });
 };
