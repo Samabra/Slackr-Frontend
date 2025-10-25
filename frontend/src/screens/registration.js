@@ -55,7 +55,9 @@ export function renderRegistration({ mount, go }) {
     mount.appendChild(document.createElement('br'));
     mount.appendChild(registerPasswordConfirmLabel);
     mount.appendChild(registerPasswordConfirm);
+    mount.appendChild(document.createElement('br'));
     mount.appendChild(registerButton);
+    mount.appendChild(document.createElement('br'));
     mount.appendChild(errorMsg);
     registerButton.addEventListener('click', () => {
         const email = registerEmailInput.value.trim();
