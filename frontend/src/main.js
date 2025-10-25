@@ -4,28 +4,25 @@ import { BACKEND_PORT } from './config.js';
 
 import { fileToDataUrl } from './helpers.js';
 import { renderLogin } from './screens/login.js'
+import { renderRegistration } from './screens/registration.js';
 
-  const mount = document.querySelector('[role="main"]');
+let TOKEN = localStorage.getItem('token');
+const mount = document.querySelector('[role="main"]');
 
-  
+const token = localStorage.getItem('token');
 
 const routes = {
     login: renderLogin,
+    register: renderRegistration,
 };
 
-  
+
   
 
 function go(name) {
     while (mount.firstChild) {
         mount.removeChild(mount.firstChild);
     }   
-
-    const token = localStorage.getItem('token');
-    const protectedScreen = new Set(['home']);
-    if (!token && protectedScreen.has(name)) {
-        name = 'login';
-    }
     const screen = routes[name];
 
     if (screen) {
@@ -34,4 +31,8 @@ function go(name) {
 
 }
 
-go('login');
+if (TOKEN) {
+    go('home');
+} else {
+    go('register');
+}

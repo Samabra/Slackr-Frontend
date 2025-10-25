@@ -1,6 +1,5 @@
 import { BACKEND_PORT } from '../config.js';
 
-  
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
@@ -89,5 +88,5 @@ const register = (email, name, password, mount, go) => {
             const decoded = JSON.parse(data);
             localStorage.setItem('token', decoded.token);
             go('home');
-        })
-}
+        });
+};
