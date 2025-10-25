@@ -67,5 +67,27 @@ export function renderRegistration({ mount, go }) {
             errorMsg.innerText = 'Passwords are not the same';
             return;
         }
+        register(email, name, password, mount, go);
+    });
+}
+
+
+const register = (email, name, password, mount, go) => {
+    fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            name: name,
+            password: password,
+        })
     })
+        .then((res) => res.text())
+        .then((data) => {
+            const decoded = JSON.parse(data);
+            localStorage.setItem('token', decoded.token);
+            go('home');
+        })
 }
