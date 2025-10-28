@@ -1,5 +1,5 @@
 import { BACKEND_PORT } from '../config.js';
-
+import { showError } from '../errorPopup.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
@@ -89,7 +89,14 @@ const register = (email, name, password, mount, go) => {
     })
         .then(res => res.json().then(data => ({ ok: res.ok, data})))
         .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Registration has failed');
+            }
             localStorage.setItem('token', data.token);
             go('home');
+        })
+        .catch(err => {
+            console.error(err);
+            showError(err.message || 'Something went wrong during registration');
         });
 };

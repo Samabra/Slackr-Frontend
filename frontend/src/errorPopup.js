@@ -1,11 +1,11 @@
 export function showError(message) {
-    const existingError = document.querySelector('.error-popup');
+    const existingError = document.querySelector('.error-body');
     if (existingError) {
         existingError.remove();
     }
 
     const errorPopup = document.createElement('div');
-    errorPopup.classList.add('error-popup');
+    errorPopup.classList.add('error-body');
     Object.assign(errorPopup.style, {
         position: 'fixed',
         top: '20px',
@@ -27,6 +27,7 @@ export function showError(message) {
 
     const closeError = document.createElement('button');
     closeError.innerText = '✖';
+    closeError.id = 'error-close';
     Object.assign(closeBtn.style, {
         background: 'transparent',
         border: 'none',
