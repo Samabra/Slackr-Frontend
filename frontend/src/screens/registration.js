@@ -38,6 +38,7 @@ export function renderRegistration({ mount, go }) {
 
     const registerButton = document.createElement('button');
     registerButton.innerText = 'Sign Up Now';
+    registerButton.id = 'register-submit';
 
     const errorMsg = document.createElement('p');
     errorMsg.id = 'error';
@@ -86,10 +87,10 @@ const register = (email, name, password, mount, go) => {
             password: password,
         })
     })
-        .then((res) => res.text())
-        .then((data) => {
-            const decoded = JSON.parse(data);
-            localStorage.setItem('token', decoded.token);
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            localStorage.setItem('token', data.token);
             go('home');
         });
+
 };
