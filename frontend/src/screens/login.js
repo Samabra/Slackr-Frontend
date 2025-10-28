@@ -20,9 +20,9 @@ export function renderLogin({ mount, go }) {
     passwordInput.type = 'password';
     passwordInput.id = 'login-password';
 
-    const loginButton = document.createElement('button');
-    loginButton.innerText = 'Login';
-    loginButton.id = 'login-button';
+    const loginSubmit = document.createElement('button');
+    loginSubmit.innerText = 'Login';
+    loginSubmit.id = 'login-submit';
 
     const errorMsg = document.createElement('p');
     errorMsg.id = 'error';
@@ -35,10 +35,10 @@ export function renderLogin({ mount, go }) {
     mount.appendChild(passwordLabel);
     mount.appendChild(passwordInput);
     mount.appendChild(document.createElement('br'));
-    mount.appendChild(loginButton);
+    mount.appendChild(loginSubmit);
     mount.appendChild(errorMsg);
 
-    loginButton.addEventListener('click', () => {
+    loginSubmit.addEventListener('click', () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
