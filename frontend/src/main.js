@@ -24,7 +24,6 @@ function go(name) {
     while (mount.firstChild) {
         mount.removeChild(mount.firstChild);
     }
-    console.log(`I am at the go function with name=${name}`);
     const token = localStorage.getItem('token');
     const protectedScreen = new Set(['home']);
     if (!token && protectedScreen.has(name))

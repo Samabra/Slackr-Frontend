@@ -1,0 +1,46 @@
+export function showError(message) {
+    const existingError = document.querySelector('.error-popup');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    const errorPopup = document.createElement('div');
+    errorPopup.classList.add('error-popup');
+    Object.assign(errorPopup.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        background: '#ff4b4b',
+        color: 'white',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        zIndex: '9999',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        minWidth: '220px',
+    });
+
+    const errorMessage = document.createElement('span');
+    errorMessage = message;
+
+    const closeError = document.createElement('button');
+    closeError.innerText = '✖';
+    Object.assign(closeBtn.style, {
+        background: 'transparent',
+        border: 'none',
+        color: 'white',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        marginLeft: 'auto',
+    });
+    closeError.addEventListener('click', () => {
+        errorPopup.remove();
+    });
+    errorPopup.appendChild(errorMessage);
+    errorPopup.appendChild(closeError);
+    document.body.appendChild(errorPopup);
+
+}

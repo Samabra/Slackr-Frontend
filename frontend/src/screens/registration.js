@@ -38,6 +38,7 @@ export function renderRegistration({ mount, go }) {
 
     const registerButton = document.createElement('button');
     registerButton.innerText = 'Sign Up Now';
+    registerButton.id = 'register-submit';
 
     const errorMsg = document.createElement('p');
     errorMsg.id = 'error';
