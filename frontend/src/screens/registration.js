@@ -86,10 +86,9 @@ const register = (email, name, password, mount, go) => {
             password: password,
         })
     })
-        .then((res) => res.text())
-        .then((data) => {
-            const decoded = JSON.parse(data);
-            localStorage.setItem('token', decoded.token);
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            localStorage.setItem('token', data.token);
             go('home');
         });
 };

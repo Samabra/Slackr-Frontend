@@ -50,7 +50,7 @@ export function renderHome({ mount, go }) {
     content.style.padding = '16px';
 
     const text = document.createElement('p');
-    empty.innerText = 'Messages will show up here';
+    text.innerText = 'Messages will show up here';
     content.appendChild(text);
 
     main.appendChild(header);
