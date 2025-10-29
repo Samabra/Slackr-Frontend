@@ -16,9 +16,29 @@ export function renderHome({ mount, go }) {
     const sideBarTitle = document.createElement('h3');
     sideBarTitle.innerText = 'Navigate To';
     const sideBarNote = document.createElement('p');
-    sideBarNote.innerText = 'Channels/DMs';
+    sideBarNote.innerText = 'Channels';
     sidebar.appendChild(sideBarTitle);
     sidebar.appendChild(sideBarNote);
+
+    const channelList = document.createElement('div');
+    channelList.classList.add('channel-list');
+    channelList.style.display = 'flex';
+    channelList.style.flexDirection = 'column';
+    channelList.style.gap = '5px';
+    sidebar.appendChild(channelList);
+
+    const channelListPublic = document.createElement('div');
+    
+    channelListPublic.style.display = 'flex';
+    channelListPublic.style.flexDirection = 'column';
+    channelListPublic.style.gap = '5px';
+    channelList.appendChild(channelListPublic);
+
+    const channelListPrivate = document.createElement('div');
+    channelListPrivate.style.display = 'flex';
+    channelListPrivate.style.flexDirection = 'column';
+    channelListPrivate.style.gap = '5px';
+    channelList.appendChild(channelListPrivate);
 
     const main = document.createElement('section');
     main.style.display = 'flex';
@@ -56,6 +76,7 @@ export function renderHome({ mount, go }) {
     main.appendChild(header);
     main.appendChild(content);
     screen.appendChild(sidebar);
+    screen.appendChild(main);
     mount.appendChild(screen);
 
 }
