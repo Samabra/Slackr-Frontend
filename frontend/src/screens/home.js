@@ -28,7 +28,6 @@ export function renderHome({ mount, go }) {
     sidebar.appendChild(channelList);
 
     const channelListPublic = document.createElement('div');
-    
     channelListPublic.style.display = 'flex';
     channelListPublic.style.flexDirection = 'column';
     channelListPublic.style.gap = '5px';
@@ -39,6 +38,46 @@ export function renderHome({ mount, go }) {
     channelListPrivate.style.flexDirection = 'column';
     channelListPrivate.style.gap = '5px';
     channelList.appendChild(channelListPrivate);
+
+    const renderChannels = () => {
+        fetch(`${API_BASE}/channel`, {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+        })
+            .then(res => res.json().then(data => ({ ok: res.ok, data})))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    throw new Error(data.error || 'Failed to load channels');
+                }
+                while (channelListPublic.firstChild) {
+                    channelListPublic.removeChild(channelListPublic.firstChild);
+                }
+                while (channelListPrivate.firstChild) {
+                    channelListPrivate.removeChild(channelListPrivate.firstChild);
+                }
+                const channels = data.channels;
+
+                for (let i = 0; i < channels.length; i++) {
+                    const ch = channels[i];
+                    const channelButton = document.createElement('button');
+                    channelButton.type = 'button';
+                    channelButton.textContent = `# ${ch.name}`;
+                    channelButton.dataset.id = ch.id;
+                    if (ch.private) {
+                        channelListPrivate.appendChild(channelButton);
+                    } else {
+                        channelListPublic.appendChild(channelButton);
+                    }
+                }
+
+            })
+            .catch(err => {
+                showError(err.message || 'Something went wrong in loading the channels');
+            })
+    }
 
     const main = document.createElement('section');
     main.style.display = 'flex';
@@ -77,6 +116,6 @@ export function renderHome({ mount, go }) {
     main.appendChild(content);
     screen.appendChild(sidebar);
     screen.appendChild(main);
-    mount.appendChild(screen);
+    mount.appendChild(screen); 
 
 }
