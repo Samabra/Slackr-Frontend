@@ -66,8 +66,11 @@ export function renderRegistration({ mount, go }) {
         const password = registerPasswordInput.value.trim();
         const passwordConfirm = registerPasswordConfirm.value.trim();
 
-        if (password !== passwordConfirm) {
-            errorMsg.innerText = 'Passwords are not the same';
+        if (!email || !name || !password || !passwordConfirm) {
+            showError('Please enter all fields to register');
+            return;
+        } else if (password !== passwordConfirm) {
+            showError('Passwords are not the same');
             return;
         }
         register(email, name, password, mount, go);

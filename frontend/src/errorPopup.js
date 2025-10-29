@@ -3,7 +3,7 @@ export function showError(message) {
     if (existingError) {
         existingError.remove();
     }
-
+    console.log(`There is an error ${message}`);
     const errorPopup = document.createElement('div');
     errorPopup.classList.add('error-body');
     Object.assign(errorPopup.style, {
@@ -23,12 +23,12 @@ export function showError(message) {
     });
 
     const errorMessage = document.createElement('span');
-    errorMessage = message;
+    errorMessage.innerText = message;
 
     const closeError = document.createElement('button');
     closeError.innerText = '✖';
     closeError.id = 'error-close';
-    Object.assign(closeBtn.style, {
+    Object.assign(closeError.style, {
         background: 'transparent',
         border: 'none',
         color: 'white',
