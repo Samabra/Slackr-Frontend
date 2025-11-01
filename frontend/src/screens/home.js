@@ -1,4 +1,4 @@
-import { API_BASE } from '../config.js';
+
 import { createChannel } from '../createChannel.js';
 import { renderChannels } from '../helpers.js';
 
@@ -87,8 +87,10 @@ export function renderHome({ mount, go }) {
     renderChannels(channelListPublic, channelListPrivate);
 
     createChannelButton.addEventListener('click', () => {
-        createChannel(channelListPublic, channelListPrivate);
-    })
+        createChannel().then(() => {
+            renderChannels(channelListPublic, channelListPrivate);
+        });
+    });
 }
 
 
