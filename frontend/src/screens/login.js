@@ -1,7 +1,6 @@
-import { BACKEND_PORT } from '../config.js';
+import { API_BASE } from '../config.js';
 import { showError } from '../errorPopup.js';
 
-const API_BASE = `http://localhost:${BACKEND_PORT}`;
 export function renderLogin({ mount, go }) {
     console.log('I am at renderLogin');
     const loginTitle = document.createElement('h2');

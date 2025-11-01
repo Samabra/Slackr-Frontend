@@ -1,7 +1,6 @@
-import { BACKEND_PORT } from '../config.js';
+import { API_BASE } from '../config.js';
 import { createChannel } from '../createChannel.js';
-
-const API_BASE = `http://localhost:${BACKEND_PORT}`;
+import { renderChannels } from '../helpers.js';
 
 export function renderHome({ mount, go }) {
 
@@ -24,7 +23,7 @@ export function renderHome({ mount, go }) {
     const createChannelButton = document.createElement('button');
     createChannelButton.innerText = 'Create Channel';
     createChannelButton.id = 'create-channel-button';
-    sidebar.appendChild(createChannel);
+    sidebar.appendChild(createChannelButton);
 
 
     const channelList = document.createElement('div');
@@ -46,7 +45,6 @@ export function renderHome({ mount, go }) {
     channelListPrivate.style.gap = '5px';
     channelList.appendChild(channelListPrivate);
 
-    renderChannels(channelListPublic, channelListPrivate);
     const main = document.createElement('section');
     main.style.display = 'flex';
     main.style.flex = '1';
@@ -61,7 +59,9 @@ export function renderHome({ mount, go }) {
 
     const title = document.createElement('h2');
     title.innerText = 'Home';
-
+    
+    const logoutButton = document.createElement('button');
+    logoutButton.innerText = 'Logout';
     header.appendChild(title);
     header.appendChild(logoutButton);
 
@@ -79,56 +79,16 @@ export function renderHome({ mount, go }) {
     screen.appendChild(main);
     mount.appendChild(screen); 
 
-    const logoutButton = document.createElement('button');
-    logoutButton.innerText = 'Logout';
     logoutButton.addEventListener('click', () => {
         localStorage.removeItem('token');
         go('login');
     });
 
+    renderChannels(channelListPublic, channelListPrivate);
+
     createChannelButton.addEventListener('click', () => {
-        createChannel();
-        renderChannels();
+        createChannel(channelListPublic, channelListPrivate);
     })
 }
 
 
-const renderChannels = (channelListPublic, channelListPrivate) => {
-    fetch(`${API_BASE}/channel`, {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-    })
-    .then(res => res.json().then(data => ({ ok: res.ok, data})))
-    .then(({ ok, data }) => {
-        if (!ok) {
-            throw new Error(data.error || 'Failed to load channels');
-        }
-        while (channelListPublic.firstChild) {
-            channelListPublic.removeChild(channelListPublic.firstChild);
-        }
-        while (channelListPrivate.firstChild) {
-            channelListPrivate.removeChild(channelListPrivate.firstChild);
-        }
-        const channels = data.channels;
-
-        for (let i = 0; i < channels.length; i++) {
-            const ch = channels[i];
-            const channelButton = document.createElement('button');
-            channelButton.type = 'button';
-            channelButton.textContent = `# ${ch.name}`;
-            channelButton.dataset.id = ch.id;
-            if (ch.private) {
-                channelListPrivate.appendChild(channelButton);
-            } else {
-                channelListPublic.appendChild(channelButton);
-            }
-        }
-
-    })
-    .catch(err => {
-        showError(err.message || 'Something went wrong in loading the channels');
-    })
-}

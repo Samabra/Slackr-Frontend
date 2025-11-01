@@ -1,4 +1,4 @@
-import { BACKEND_PORT } from './config.js';
+import { API_BASE } from './config.js';
 
 // A helper you may want to use when uploading new images to the server.
 
@@ -16,9 +16,6 @@ const routes = {
     register: renderRegistration,
     home: renderHome,
 };
-
-
-  
 
 function go(name) {
     while (mount.firstChild) {

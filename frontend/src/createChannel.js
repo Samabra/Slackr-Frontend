@@ -1,11 +1,10 @@
-import { BACKEND_PORT } from "./config";
-import { showError } from "./errorPopup";
+import { API_BASE } from "./config.js";
+import { showError } from "./errorPopup.js";
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
 
-export function createChannel() {
-
+export function createChannel(channelListPublic, channelListPrivate) {
     const createChannelPopup = document.createElement('div');
     Object.assign(createChannelPopup.style, {
         position: 'fixed',
@@ -13,6 +12,7 @@ export function createChannel() {
         bacgkround: 'rgba(0,0,0,0.4)',
         zIndex: '9998',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
     });
@@ -69,7 +69,7 @@ export function createChannel() {
     createChannelSubmit.addEventListener('click', () => {
         const name = channelName.value.trim();
         const description = (channelDescription.value || '').trim();
-        const isPrivate = !!channelPrivate.checked;
+        const isPrivate = channelPrivate.checked;
         if (!name) {
             showError('A channel name is required.');
             return;
