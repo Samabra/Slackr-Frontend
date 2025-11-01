@@ -7,7 +7,18 @@ const API_BASE = `http://localhost:${BACKEND_PORT}`;
 export function createChannel() {
 
     const createChannelPopup = document.createElement('div');
+    Object.assign(createChannelPopup.style, {
+        position: 'fixed',
+        inset: '0',
+        bacgkround: 'rgba(0,0,0,0.4)',
+        zIndex: '9998',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    });
 
+    const createChannelTitle = document.createElement('h2');
+    createChannelTitle.innerText = 'Create Channel';
     const channelNameLabel = document.createElement('label');
     channelNameLabel.innerText = 'Name';
 
@@ -34,18 +45,42 @@ export function createChannel() {
     createChannelSubmit.id = 'create-channel-submit';
     createChannelSubmit.innerText = 'Create Channel';
 
+    const createChannelPopupClose = document.createElement('button');
+    createChannelPopupClose.type = 'button';
+    createChannelPopupClose.textContent = '✖';
+    createChannelPopupClose.style.alignSelf = 'flex-end';
+    createChannelPopupClose.addEventListener('click', () => document.body.removeChild(createChannelPopup));
+
+    createChannelPopup.appendChild(createChannelPopupClose);
+    createChannelPopup.appendChild(createChannelTitle);
+    createChannelPopup.appendChild(document.createElement('br'));
+    createChannelPopup.appendChild(channelNameLabel);
+    createChannelPopup.appendChild(channelName);
+    createChannelPopup.appendChild(document.createElement('br'));
+    createChannelPopup.appendChild(channelDescriptionLabel);
+    createChannelPopup.appendChild(channelDescription);
+    createChannelPopup.appendChild(document.createElement('br'));
+    createChannelPopup.appendChild(channelPrivateLabel);
+    createChannelPopup.appendChild(channelPrivate);
+    createChannelPopup.appendChild(document.createElement('br'));
+    createChannelPopup.appendChild(createChannelSubmit);
+    document.body.appendChild(createChannelPopup);
+
     createChannelSubmit.addEventListener('click', () => {
         const name = channelName.value.trim();
-        const description = channelDescription.value;
+        const description = (channelDescription.value || '').trim();
         const isPrivate = !!channelPrivate.checked;
-        newChannel(name, isPrivate, description);
+        if (!name) {
+            showError('A channel name is required.');
+            return;
+        }
+        createChannelSubmit.disabled = true;
+        newChannel(name, isPrivate, description, createChannelPopup);
     })
-
-
 }
 
 
-const newChannel = (name, isPrivate, description) => {
+const newChannel = (name, isPrivate, description, createChannelPopup) => {
     fetch(`${API_BASE}/channel`, {
         method: 'POST',
         headers: {
@@ -58,11 +93,12 @@ const newChannel = (name, isPrivate, description) => {
             description: description,
         })
     })
-        .then(res => res.json(),then(data => ({ ok: res.ok, data })))
-        ,then(({ ok, data }) => {
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
             if (!ok) {
                 throw new Error(data.error || 'Failed to create new channel');
             }
+            document.body.removeChild(createChannelPopup);
         })
         .catch(err => {
             showError(err.message || 'Something went wrong when trying to create a new channel');

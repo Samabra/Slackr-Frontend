@@ -1,4 +1,5 @@
 import { BACKEND_PORT } from '../config.js';
+import { createChannel } from '../createChannel.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
@@ -25,9 +26,6 @@ export function renderHome({ mount, go }) {
     createChannelButton.id = 'create-channel-button';
     sidebar.appendChild(createChannel);
 
-    createChannel.addEventListener('click', () => {
-        
-    })
 
     const channelList = document.createElement('div');
     channelList.classList.add('channel-list');
@@ -64,13 +62,6 @@ export function renderHome({ mount, go }) {
     const title = document.createElement('h2');
     title.innerText = 'Home';
 
-    const logoutButton = document.createElement('button');
-    logoutButton.innerText = 'Logout';
-    logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        go('login');
-    });
-
     header.appendChild(title);
     header.appendChild(logoutButton);
 
@@ -88,6 +79,17 @@ export function renderHome({ mount, go }) {
     screen.appendChild(main);
     mount.appendChild(screen); 
 
+    const logoutButton = document.createElement('button');
+    logoutButton.innerText = 'Logout';
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        go('login');
+    });
+
+    createChannelButton.addEventListener('click', () => {
+        createChannel();
+        renderChannels();
+    })
 }
 
 
