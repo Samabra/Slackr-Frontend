@@ -20,6 +20,15 @@ export function renderHome({ mount, go }) {
     sidebar.appendChild(sideBarTitle);
     sidebar.appendChild(sideBarNote);
 
+    const createChannelButton = document.createElement('button');
+    createChannelButton.innerText = 'Create Channel';
+    createChannelButton.id = 'create-channel-button';
+    sidebar.appendChild(createChannel);
+
+    createChannel.addEventListener('click', () => {
+        
+    })
+
     const channelList = document.createElement('div');
     channelList.classList.add('channel-list');
     channelList.style.display = 'flex';
