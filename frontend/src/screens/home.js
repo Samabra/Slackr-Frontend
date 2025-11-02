@@ -1,7 +1,7 @@
 
 import { createChannel } from '../createChannel.js';
 import { renderChannels } from '../helpers.js';
-
+import { renderChannelDetails } from '../renderChannelDetails.js';
 export function renderHome({ mount, go }) {
 
     const screen = document.createElement('div');
@@ -105,7 +105,14 @@ export function renderHome({ mount, go }) {
         go('login');
     });
 
-    renderChannels(channelListPublic, channelListPrivate);
+    renderChannels(channelListPublic, channelListPrivate, {
+        onItemClick: (channel) => {
+            renderChannelDetails(channelDetails, channel.id, {
+                publicChannelElement: channelListPublic,
+                privateChannelElement: channelListPrivate,
+            });
+        },
+    });
 
     createChannelButton.addEventListener('click', () => {
         createChannel().then(() => {
