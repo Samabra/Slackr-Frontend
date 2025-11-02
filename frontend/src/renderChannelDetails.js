@@ -40,3 +40,37 @@ function updateChannel(channelId, name, description) {
             return data;
         })
 }
+
+function joinChannel(channelId) {
+    return fetch(`${API_BASE}/channel/${channelId}/join`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json.then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        })
+}
+
+function leaveChannel(channelId) {
+    return fetch(`${API_BASE}/channel/${channelId}/leave`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json.then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        })
+}
