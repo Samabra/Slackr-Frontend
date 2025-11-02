@@ -57,6 +57,33 @@ export function renderHome({ mount, go }) {
     header.style.padding = '12px';
     header.style.borderBottom = '1px solid #eee';
 
+    const body = document.createElement('div');
+    body.style.display = 'flex';
+    body.style.flex = '1';
+    body.style.minHeight = '0';
+
+    const messagesPane = document.createElement('div');
+    messagesPane.style.flex = '2';
+    messagesPane.style.padding = '16px';
+    messagesPane.style.borderRight = '1px solid #eee';
+
+    const messagesPlaceHolder = document.createElement('p');
+    messagesPlaceHolder.innerText = 'Messages will go here';
+    messagesPane.appendChild(messagesPlaceHolder);
+
+    const channelDetails = document.createElement('aside');
+    channelDetails.id = 'channel-details-container';
+    channelDetails.style.display = 'flex';
+    channelDetails.style.flexDirection = 'column';
+    channelDetails.style.flex = '1';
+    channelDetails.style.gap = '8px';
+    channelDetails.style.padding = '16px';
+    channelDetails.style.border = '1px solid #eee';
+
+    const placeHolderText = document.createElement('p');
+    placeHolderText.innerText = 'Select a channel to view details';
+    channelDetails.appendChild(placeHolderText);
+
     const title = document.createElement('h2');
     title.innerText = 'Home';
     
@@ -65,16 +92,10 @@ export function renderHome({ mount, go }) {
     header.appendChild(title);
     header.appendChild(logoutButton);
 
-    const content = document.createElement('div');
-    content.style.flex = '1';
-    content.style.padding = '16px';
-
-    const text = document.createElement('p');
-    text.innerText = 'Messages will show up here';
-    content.appendChild(text);
-
+    body.appendChild(messagesPane);
+    body.appendChild(channelDetails);
     main.appendChild(header);
-    main.appendChild(content);
+    main.appendChild(body);
     screen.appendChild(sidebar);
     screen.appendChild(main);
     mount.appendChild(screen); 
