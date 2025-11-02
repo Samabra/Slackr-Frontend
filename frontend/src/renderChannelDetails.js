@@ -167,6 +167,61 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             cancelButton.innerText = 'Cancel';
             cancelButton.disabled = true;
 
+            actions.appendChild(editChannel);
+            actions.appendChild(saveChannel);
+            actions.appendChild(cancelButton);
+
+            let originalName = channel.name;
+            let originalDescription = channel.description;
+            if (!channel.creator) {
+                editChannel.disabled = true;
+            }
+
+            function enterEdit() {
+                channelTitle.disabled = false;
+                channelDescription.disabled = false;
+                saveChannel.disabled = false;
+                cancelButton.disabled = false;
+            }
+
+            function exitEdit(reset) {
+                if (reset) {
+                    channelTitle.value = originalName;
+                    if (originalDescription = '') {
+                        channelDescription.placeholder = 'No description';
+                    } else {
+                        channelDescription.value = originalDescription;
+                    }
+                }
+                channelTitle.disabled = true;
+                channelDescription.disabled = true;
+                saveChannel.disabled = true;
+                cancelButton.disabled = true;
+                editButton
+            }
+            editChannel.addEventListener('click', () => {
+                enterEdit();
+            });
+
+            cancelButton.addEventListener('click', () => {
+                exitEdit(true);
+            });
+
+            saveChannel.addEventListener('click', () => {
+                const newChannelTitle = channelTitle.value.trim();
+                const newChannelDescription = (channelDescription.value || '').trim();
+                if (!newChannelTitle) {
+                    showError('Channel name is required');
+                    return;
+                }
+
+                saveChannel.disabled = true;
+                cancelButton.disabled = true;
+                updateChannel(channel.id, newChannelTitle, newChannelDescription)
+                    .then(() => {
+                        
+                    })
+            })
         })
 
 }
