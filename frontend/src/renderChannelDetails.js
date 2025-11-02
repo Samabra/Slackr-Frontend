@@ -99,28 +99,74 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             while (channelDetails.firstChild) {
                 channelDetails.removeChild(channelDetails.firstChild);
             }
-            const channelTitle = document.createElement('h3');
-            channelTitle.innerText = channel.name;
-            channelDetails.appendChild(channelTitle);
-            const channelDescription = document.createElement('p');
-            if (channelDescription === '') {
-                channelDescription.innerText = 'No description';
+            const channelDetailHeader = document.createElement('h3');
+            channelDetailHeader.innerText = 'Channel Details';
+            channelDetails.appendChild(channelDetailHeader);
+
+            const channelTitleLabel = document.createElement('label');
+            channelTitleLabel.innerText = 'Name';
+            const channelTitle = document.createElement('input')
+            channelTitle.type = 'text';
+            channelTitle.value = channel.name;
+            channelTitle.disabled = true;
+
+            const channelDescriptionLabel = document.createElement('label');
+            channelDescriptionLabel.innerText = 'Channel Description';
+            const channelDescription = document.createElement('textarea');
+            if (channel.description === '') {
+                channelDescription.placeholder = 'No description';
             } else {
-                channelDescription.innerText = channel.description;
+                channelDescription.value = channel.description;
             }
-            channelDetails.appendChild(channelDescription);
+            channelDescription.disabled = true;
+
+
             const visibility = document.createElement('p');
             visibility.innerText = channel.private ? 'Private': 'Public';
-            
+
+
             const dateCreated = document.createElement('p');
             dateCreated.innerText = 'Created at: ' + new Date(channel.createdAt).toLocaleString();
 
+            const stackLayout = document.createElement('div');
+            stackLayout.style.display = 'flex';
+            stackLayout.style.flexDirection = 'column';
+            stackLayout.style.gap = '8px';
+
+            stackLayout.appendChild(channelTitleLabel);
+            stackLayout.appendChild(channelTitle);
+            stackLayout.appendChild(channelDescriptionLabel);
+            stackLayout.appendChild(channelDescription);
+            stackLayout.appendChild(visibility);
+            stackLayout.appendChild(dateCreated);
+            channelDetails.appendChild(stackLayout);
             return getUser(channel.creator)
                 .then(user => {
                     const creator = document.createElement('p');
                     creator.innerText = `Created by ${user.name}`;
+                    channelDetails.appendChild(creator);
                     return channel;
-                })
+                });
+        })
+        .then(channel => {
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '8px';
+
+            const editChannel = document.createElement('button');
+            editChannel.innerText = 'Edit';
+            editChannel.type = 'button';
+
+            const saveChannel = document.createElement('button');
+            saveChannel.type = 'button';
+            saveChannel.innerText = 'Save';
+            saveChannel.disabled = true;
+
+            const cancelButton = document.createElement('button');
+            cancelButton.type = 'button';
+            cancelButton.innerText = 'Cancel';
+            cancelButton.disabled = true;
 
         })
+
 }
