@@ -91,3 +91,14 @@ export function getUser(userId) {
             return data;
         })
 }
+
+export function makeLoader() {
+    const loader = document.createElement('div');
+    loader.style.display = 'flex';
+    loader.style.justifyContent = 'center';
+    loader.style.padding = '10px';
+    loader.style.color = '#888';
+    loader.style.fontSize = '14px';
+    loader.textContent = 'Loading ...';
+    return loader;
+}

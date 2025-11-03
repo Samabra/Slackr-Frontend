@@ -1,10 +1,10 @@
 import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { getUser } from "./helpers.js";
-import { fileToDataUrl } from "./helpers.js";
+import { fileToDataUrl, makeLoader } from "./helpers.js";
 
 function getMessages(channelId, start) {
-    return fetch(`${API_BASE}/message/${channelId}`, {
+    return fetch(`${API_BASE}/message/${channelId}?start=${start}`, {
         method: 'GET',
         headers: {
             'Content-type': 'application/json',
@@ -149,12 +149,34 @@ export function renderMessages(channelId, messagesPane) {
     attachButton.style.border = 'none';
     attachButton.style.cursor = 'pointer';
 
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/png, image/jpeg, image/jpg';
+    fileInput.style.display = 'none';
+
+    const inputColumns = document.createElement('div');
+    inputColumns.style.display = 'flex';
+    inputColumns.style.flexDirection = 'column';
+    inputColumns.style.flex = '1';
+    inputColumns.style.gap = '6px';
+
     const messageInput = document.createElement('textarea');
     messageInput.rows = 2;
     messageInput.placeholder = 'Write a message...';
     messageInput.style.flex = '1';
     messageInput.style.resize = 'vertical';
     messageInput.style.padding = '6px';
+
+    const thumbPreview = document.createElement('div');
+    thumbPreview.style.display = 'flex';
+    thumbPreview.style.alignItems = 'left';
+    thumbPreview.style.gap = '8px';
+    thumbPreview.style.minHeight = '0';
+    thumbPreview.style.flexWrap = 'wrap';
+    thumbPreview.style.padding = '2px 0';
+
+    inputColumns.appendChild(messageInput);
+    inputColumns.appendChild(thumbPreview);
 
     const sendButton = document.createElement('button');
     sendButton.type = 'button';
@@ -183,8 +205,9 @@ export function renderMessages(channelId, messagesPane) {
     sendButton.appendChild(svg);
 
     messageComposer.appendChild(attachButton);
-    messageComposer.appendChild(messageInput);
+    messageComposer.appendChild(inputColumns);
     messageComposer.appendChild(sendButton);
+    messageComposer.appendChild(fileInput);
     messagesPane.appendChild(messageList);
     messagesPane.appendChild(messageComposer);
 
@@ -199,7 +222,7 @@ export function renderMessages(channelId, messagesPane) {
             if (loader.parentNode === messageList) {
                 messageList.removeChild(loader);
             }
-            messages.forEach(message => {
+            messages.reverse().forEach(message => {
                 const messageElement = buildMessage(message);
                 messageList.appendChild(messageElement);
             });
@@ -236,6 +259,42 @@ export function renderMessages(channelId, messagesPane) {
                 showError(err.message || 'Failed to load older messages')
             })
             .finally(() => (isLoadingOlder = false));
+    });
+
+    let selectedFile = null;
+    let thumbnail = null;
+
+    attachButton.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+        if (thumbnail) {
+            thumbnail.remove();
+        }
+
+        if (!selectedFile) {
+            return;
+        }
+        fileToDataUrl(selectedFile)
+            .then((dataUrl) => {
+                const previewArea = document.createElement('div');
+                previewArea.style.display = 'flex';
+                previewArea.style.alignItems = 'center';
+                previewArea.style.gap = '8px';
+                previewArea.style.background = '#f2f2f2';
+                previewArea.style.border = '1px solid #e5e5e5';
+                previewArea.style.borderRadius = '12px';
+                previewArea.style.padding = '4px 8px';
+
+                const imagePreview = document.createElement('img');
+                imagePreview.src = dataUrl;
+                imagePreview.alt = 'attachment';
+                imagePreview.style.width = '36px';
+                imagePreview.style.height = '36px';
+                imagePreview.style.objectFit = 'cover';
+                imagePreview.style.borderRadius = '6px';
+            })
     });
 
 }
