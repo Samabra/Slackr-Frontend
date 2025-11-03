@@ -42,7 +42,7 @@ function sendMessages(channelId, message, image) {
         })
 }
 
-function buildMessage(message, user) {
+function buildMessage(message) {
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'message-container';
     messagesContainer.style.display = 'flex';
@@ -52,14 +52,13 @@ function buildMessage(message, user) {
 
     const avatar = document.createElement('img');
     avatar.alt = 'avatar';
-    avatar.width = 36;
-    avatar.height = 36;
+    avatar.width = '36px';
+    avatar.height = '36px';
     avatar.style.borderRadius = '50%';
 
     const fallback = 
     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxOCIgY3k9IjEzIiByPSI4IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTkgMjkuNWMwLTQuNCAzLjYtOC41IDktOC41czkgNC4xIDkgOC41IiBmaWxsPSIjZGRkIi8+PC9zdmc+';
-    avatar.src = (user.image && user.image.startsWith('data:')) ? user.image : fallback;
-
+    
     const main = document.createElement('div');
     main.style.flex = '1';
 
@@ -69,7 +68,6 @@ function buildMessage(message, user) {
     head.style.alignItems = 'baseline';
 
     const name = document.createElement('strong');
-    name.textContent = `${user.name}`;
 
     const time = document.createElement('span');
     time.style.color = '#666';
@@ -100,6 +98,16 @@ function buildMessage(message, user) {
     main.appendChild(body);
     messagesContainer.appendChild(avatar);
     messagesContainer.appendChild(main);
+
+    getUser(message.sender)
+        .then(user => {
+            name.textContent = user.name;
+            avatar.src = (user.image && user.image.startsWith('data:')) ? user.image : fallback;
+        })
+        .catch(() => {
+            name.textContent = 'Unknown user';
+            avatar.src = fallback;
+        })
     return messagesContainer;
 
 
@@ -111,7 +119,7 @@ export function renderMessages(channelId, messagesPane) {
     }
 
     const messageList = document.createElement('div');
-    messageList.style.display = flex;
+    messageList.style.display = 'flex';
     messageList.style.flexDirection = 'column';
     messageList.style.height = '100%';
     messageList.style.overflow = 'auto';
@@ -131,23 +139,65 @@ export function renderMessages(channelId, messagesPane) {
     messageComposer.style.marginTop = '8px';
     messageComposer.style.flexWrap = 'wrap';
 
+    const attachButton = document.createElement('button');
+    attachButton.textContent = '+';
+    attachButton.title = 'Attach Image';
+    attachButton.style.width = '36px';
+    attachButton.style.height = '36px';
+    attachButton.style.borderRadius = '50%';
+    attachButton.style.background = '#e3e3e3';
+    attachButton.style.border = 'none';
+    attachButton.style.cursor = 'pointer';
+
     const messageInput = document.createElement('textarea');
     messageInput.rows = 2;
     messageInput.placeholder = 'Write a message...';
     messageInput.style.flex = '1';
     messageInput.style.resize = 'vertical';
+    messageInput.style.padding = '6px';
 
     const sendButton = document.createElement('button');
-    sendButton.textContent = 'Send';
     sendButton.type = 'button';
+    sendButton.textContent = 'Send';
+    sendButton.title = 'Send message';
+    sendButton.style.width = '40px';
+    sendButton.style.height = '40px';
+    sendButton.style.border = 'none';
+    sendButton.style.borderRadius = '50%';
+    sendButton.style.background = '#007a5a';
+    sendButton.style.cursor = 'pointer';
+    sendButton.style.display = 'flex';
+    sendButton.style.alignItems = 'center';
+    sendButton.style.justifyContent = 'center';
 
+
+    const sendSVG = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(sendSVG, 'svg');
+    svg.setAttribute('width', '18');
+    svg.setAttribute('height', '18');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'white');
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', 'M2 21l21-9L2 3v7l15 2-15 2z');
+    svg.appendChild(path);
+    sendButton.appendChild(svg);
+
+    messageComposer.appendChild(attachButton);
     messageComposer.appendChild(messageInput);
+    messageComposer.appendChild(sendButton);
+    messagesPane.appendChild(messageList);
+    messagesPane.appendChild(messageComposer);
 
 
 
+    let start = 0;
     return getMessages(channelId, start)
-        .then(() => {
-
+        .then(({ messages }) => {
+            messageList.removeChild(loader);
+            messages.forEach(message => {
+                const messageElement = buildMessage(message);
+                messageList.appendChild(messageElement);
+            })
         })
 
 }
