@@ -122,7 +122,7 @@ export function renderMessages(channelId, messagesPane) {
     messageList.style.display = 'flex';
     messageList.style.flexDirection = 'column';
     messageList.style.height = '100%';
-    messageList.style.overflow = 'auto';
+    messageList.style.overflowY = 'auto';
     messageList.style.paddingRight = '8px';
 
     const loader = makeLoader();
@@ -177,7 +177,7 @@ export function renderMessages(channelId, messagesPane) {
     svg.setAttribute('height', '18');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('fill', 'white');
-    const path = document.createElementNS(svgNS, 'path');
+    const path = document.createElementNS(sendSVG, 'path');
     path.setAttribute('d', 'M2 21l21-9L2 3v7l15 2-15 2z');
     svg.appendChild(path);
     sendButton.appendChild(svg);
@@ -191,13 +191,51 @@ export function renderMessages(channelId, messagesPane) {
 
 
     let start = 0;
-    return getMessages(channelId, start)
+
+    let isLoadingOlder = false;
+    let allMessagesLoaded = false;
+    getMessages(channelId, start)
         .then(({ messages }) => {
-            messageList.removeChild(loader);
+            if (loader.parentNode === messageList) {
+                messageList.removeChild(loader);
+            }
             messages.forEach(message => {
                 const messageElement = buildMessage(message);
                 messageList.appendChild(messageElement);
-            })
+            });
+            messageList.scrollTop = messageList.scrollHeight;
         })
+        .catch(err => {
+            showError(err.message || 'Failed to load messages');
+        });
+    
+    messageList.addEventListener('scroll', () => {
+        if (messageList.scrollTop > 0 || isLoadingOlder || allMessagesLoaded) {
+            return;
+        }
+        isLoadingOlder = true;
+        start += 25;
+
+        const oldScrollHeight = messageList.scrollHeight;
+
+        getMessages(channelId, start)
+            .then(({ messages }) => {
+                if (!messages.length) {
+                    allMessagesLoaded = true;
+                    return;
+                }
+                const firstMessage = messageList.firstChild;
+                messages.reverse().forEach(message => {
+                    const messageElement = buildMessage(message);
+                    messageList.appendChild(messageElement);
+                });
+
+                messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
+            })
+            .catch(err => {
+                showError(err.message || 'Failed to load older messages')
+            })
+            .finally(() => (isLoadingOlder = false));
+    });
 
 }
