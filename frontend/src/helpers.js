@@ -74,3 +74,20 @@ export function renderChannels(channelListPublic, channelListPrivate) {
         showError(err.message || 'Something went wrong in loading the channels');
     })
 }
+
+export function getUser(userId) {
+    return fetch(`${API_BASE}/user/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to get user details');
+            }
+            return data;
+        })
+}

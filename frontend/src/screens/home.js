@@ -2,8 +2,9 @@
 import { createChannel } from '../createChannel.js';
 import { renderChannels } from '../helpers.js';
 import { renderChannelDetails } from '../renderChannelDetails.js';
+import { renderMessages } from '../renderMessages.js';
 
-function channelClicks(listElement, channelDetails, channelListPublic, channelListPrivate) {
+function channelClicks(listElement, channelDetails, channelListPublic, channelListPrivate, messagesPane) {
     listElement.addEventListener('click', (e) => {
         const channelButton = e.target.closest('button[data-id]');
         if (!channelButton) {
@@ -11,6 +12,7 @@ function channelClicks(listElement, channelDetails, channelListPublic, channelLi
         }
         const channelId = Number(channelButton.dataset.id);
         renderChannelDetails(channelDetails, channelId, { channelListPublic, channelListPrivate });
+        renderMessages(channelId, messagesPane)
     });
 }
 
@@ -92,8 +94,8 @@ export function renderHome({ mount, go }) {
     channelDetails.style.padding = '16px';
     channelDetails.style.border = '1px solid #eee';
 
-    channelClicks(channelListPublic, channelDetails, channelListPublic, channelListPrivate);
-    channelClicks(channelListPrivate, channelDetails, channelListPublic, channelListPrivate);
+    channelClicks(channelListPublic, channelDetails, channelListPublic, channelListPrivate, messagesPane);
+    channelClicks(channelListPrivate, channelDetails, channelListPublic, channelListPrivate, messagesPane);
 
     const placeHolderText = document.createElement('p');
     placeHolderText.innerText = 'Select a channel to view details';
