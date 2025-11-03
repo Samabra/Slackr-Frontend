@@ -82,7 +82,26 @@ function buildMessage(message, user) {
     body.style.marginTop = '4px';
 
     const text = document.createElement('div');
-    
+    text.style.margin = '0';
+    text.textContent = message.message;
+    body.appendChild(text);
+
+    if (message.image && message.image.startsWith('data:')) {
+        const image = document.createElement('img');
+        image.src = message.image;
+        image.alt = 'attachment';
+        image.style.maxWidth = '100%';
+        image.style.marginTop = '6px';
+        image.style.borderRadius = '8px';
+        body.append(img);
+    }
+
+    main.append(head);
+    main.appendChild(body);
+    messagesContainer.appendChild(avatar);
+    messagesContainer.appendChild(main);
+    return messagesContainer;
+
 
 }
 
@@ -91,8 +110,44 @@ export function renderMessages(channelId, messagesPane) {
         messagesPane.removeChild(messagesPane.firstChild);
     }
 
+    const messageList = document.createElement('div');
+    messageList.style.display = flex;
+    messageList.style.flexDirection = 'column';
+    messageList.style.height = '100%';
+    messageList.style.overflow = 'auto';
+    messageList.style.paddingRight = '8px';
+
+    const loader = makeLoader();
+    messageList.appendChild(loader);
+
+    messagesPane.appendChild(messageList);
+
+    const messageComposer = document.createElement('div');
+    messageComposer.style.display = 'flex';
+    messageComposer.style.gap = '8px';
+    messageComposer.style.alignItems = 'center';
+    messageComposer.style.borderTop = '1px solid #eee';
+    messageComposer.style.padding = '8px';
+    messageComposer.style.marginTop = '8px';
+    messageComposer.style.flexWrap = 'wrap';
+
+    const messageInput = document.createElement('textarea');
+    messageInput.rows = 2;
+    messageInput.placeholder = 'Write a message...';
+    messageInput.style.flex = '1';
+    messageInput.style.resize = 'vertical';
+
+    const sendButton = document.createElement('button');
+    sendButton.textContent = 'Send';
+    sendButton.type = 'button';
+
+    messageComposer.appendChild(messageInput);
+
+
 
     return getMessages(channelId, start)
-        .then
+        .then(() => {
+
+        })
 
 }
