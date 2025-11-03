@@ -15,6 +15,8 @@
  */
 
 import { API_BASE } from "./config.js";
+import { showError } from "./errorPopup.js";
+
 export function fileToDataUrl(file) {
     const validFileTypes = [ 'image/jpeg', 'image/png', 'image/jpg' ]
     const valid = validFileTypes.find(type => type === file.type);
@@ -66,7 +68,7 @@ export function renderChannels(channelListPublic, channelListPrivate) {
                 channelListPublic.appendChild(channelButton);
             }
         }
-
+        return channels;
     })
     .catch(err => {
         showError(err.message || 'Something went wrong in loading the channels');

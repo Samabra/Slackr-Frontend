@@ -1,7 +1,19 @@
 
 import { createChannel } from '../createChannel.js';
 import { renderChannels } from '../helpers.js';
-// import { renderChannelDetails } from '../renderChannelDetails.js';
+import { renderChannelDetails } from '../renderChannelDetails.js';
+
+function channelClicks(listElement, channelDetails, channelListPublic, channelListPrivate) {
+    listElement.addEventListener('click', (e) => {
+        const channelButton = e.target.closest('button[data-id]');
+        if (!channelButton) {
+            return;
+        }
+        const channelId = Number(channelButton.dataset.id);
+        renderChannelDetails(channelDetails, channelId, { channelListPublic, channelListPrivate });
+    });
+}
+
 export function renderHome({ mount, go }) {
 
     const screen = document.createElement('div');
@@ -80,6 +92,9 @@ export function renderHome({ mount, go }) {
     channelDetails.style.padding = '16px';
     channelDetails.style.border = '1px solid #eee';
 
+    channelClicks(channelListPublic, channelDetails, channelListPublic, channelListPrivate);
+    channelClicks(channelListPrivate, channelDetails, channelListPublic, channelListPrivate);
+
     const placeHolderText = document.createElement('p');
     placeHolderText.innerText = 'Select a channel to view details';
     channelDetails.appendChild(placeHolderText);
@@ -105,14 +120,7 @@ export function renderHome({ mount, go }) {
         go('login');
     });
 
-    renderChannels(channelListPublic, channelListPrivate, {
-        onItemClick: (channel) => {
-            renderChannelDetails(channelDetails, channel.id, {
-                publicChannelElement: channelListPublic,
-                privateChannelElement: channelListPrivate,
-            });
-        },
-    });
+    renderChannels(channelListPublic, channelListPrivate);
 
     createChannelButton.addEventListener('click', () => {
         createChannel().then(() => {

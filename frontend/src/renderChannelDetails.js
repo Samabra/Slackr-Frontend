@@ -86,7 +86,7 @@ function getUser(userId) {
         .then(res => res.json().then(data => ({ ok: res.ok, data})))
         .then(({ ok, data }) => {
             if (!ok) {
-                throw new Error(data.error || 'Failed to get user details channel');
+                throw new Error(data.error || 'Failed to get user details');
             }
             return data;
         })
@@ -94,11 +94,11 @@ function getUser(userId) {
 
 
 export function renderChannelDetails(channelDetails, channelId, channelLists) {
+    while (channelDetails.firstChild) {
+        channelDetails.removeChild(channelDetails.firstChild);
+    }
     return getChannel(channelId)
         .then(channel => {
-            while (channelDetails.firstChild) {
-                channelDetails.removeChild(channelDetails.firstChild);
-            }
             const channelDetailHeader = document.createElement('h3');
             channelDetailHeader.innerText = 'Channel Details';
             channelDetails.appendChild(channelDetailHeader);
@@ -145,10 +145,10 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                     const creator = document.createElement('p');
                     creator.innerText = `Created by ${user.name}`;
                     channelDetails.appendChild(creator);
-                    return channel;
+                    return { channel, channelTitle, channelDescription };
                 });
         })
-        .then(channel => {
+        .then(({ channel, channelTitle, channelDescription }) => {
             const actions = document.createElement('div');
             actions.style.display = 'flex';
             actions.style.gap = '8px';
@@ -167,15 +167,18 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             cancelButton.innerText = 'Cancel';
             cancelButton.disabled = true;
 
+            const leaveButton = document.createElement('button');
+            leaveButton.type = 'button';
+            leaveButton.innerText = 'Leave Channel';
+
             actions.appendChild(editChannel);
             actions.appendChild(saveChannel);
             actions.appendChild(cancelButton);
+            channelDetails.appendChild(actions);
+            channelDetails.appendChild(leaveButton);
 
             let originalName = channel.name;
             let originalDescription = channel.description;
-            if (!channel.creator) {
-                editChannel.disabled = true;
-            }
 
             function enterEdit() {
                 channelTitle.disabled = false;
@@ -197,7 +200,7 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                 channelDescription.disabled = true;
                 saveChannel.disabled = true;
                 cancelButton.disabled = true;
-                editButton
+                editChannel.disabled = false;
             }
             editChannel.addEventListener('click', () => {
                 enterEdit();
@@ -217,11 +220,50 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
 
                 saveChannel.disabled = true;
                 cancelButton.disabled = true;
-                updateChannel(channel.id, newChannelTitle, newChannelDescription)
+                updateChannel(channelId, newChannelTitle, newChannelDescription)
                     .then(() => {
-                        
+                        if (channelLists && channelLists.channelListPublic && channelLists.channelListPrivate) {
+                            console.log('I am now updating the channel')
+                            return renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate);
+                        }
                     })
-            })
+                    .then(() => {
+                        return renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate);
+                    })
+                    .catch(err => {
+                        console.log('I failed to update the channels');
+                        console.log(err.message);
+                        showError(err.message || 'Failed to update channels');
+                        saveChannel.disabled = false;
+                        cancelButton.disable = false;
+                    })
+                    .finally(() => {
+                        exitEdit();
+                    });
+            });
+            return null;
         })
+        .catch(err => {
+            const title = document.createElement('h3');
+            title.innerText = 'Channel Details';
+            channelDetails.appendChild(title);
+
+            const notMember = document.createElement('p');
+            notMember.innerText = "You're not a member of this channel. Join this channel to start a conversation";
+            channelDetails.appendChild(notMember);
+            const joinChannelButton = document.createElement('button');
+            joinChannelButton.textContent = "Join Channel";
+            channelDetails.appendChild(joinChannelButton);
+
+            joinChannelButton.addEventListener('click', () => {
+                joinChannel(channelId)
+                    .then(() => renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate))
+                    .then(() => renderChannelDetails(channelDetails, channelId, channelLists))
+                    .catch(err => showError(err.message || 'Failed to join channel'));
+            });
+            return;
+        });
+
+
 
 }
