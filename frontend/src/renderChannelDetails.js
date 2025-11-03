@@ -241,6 +241,13 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                         exitEdit();
                     });
             });
+
+            leaveButton.addEventListener('click', () => {
+                leaveChannel(channelId)
+                    .then(() => renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate))
+                    .then(() => renderChannelDetails(channelDetails, channelId, channelLists))
+                    .then(err => showError(err.message || 'Failed to leave channel'))
+            });
             return null;
         })
         .catch(err => {
@@ -259,7 +266,7 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                 joinChannel(channelId)
                     .then(() => renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate))
                     .then(() => renderChannelDetails(channelDetails, channelId, channelLists))
-                    .catch(err => showError(err.message || 'Failed to join channel'));
+                    .catch(err => showError(err.message || 'Failed to join channel'))
             });
             return;
         });
