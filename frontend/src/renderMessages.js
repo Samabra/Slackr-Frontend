@@ -52,8 +52,8 @@ function buildMessage(message) {
 
     const avatar = document.createElement('img');
     avatar.alt = 'avatar';
-    avatar.width = '36px';
-    avatar.height = '36px';
+    avatar.width = 36;
+    avatar.height = 36;
     avatar.style.borderRadius = '50%';
 
     const fallback = 
@@ -169,7 +169,7 @@ export function renderMessages(channelId, messagesPane) {
 
     const thumbPreview = document.createElement('div');
     thumbPreview.style.display = 'flex';
-    thumbPreview.style.alignItems = 'left';
+    thumbPreview.style.alignItems = 'flex-start';
     thumbPreview.style.gap = '8px';
     thumbPreview.style.minHeight = '0';
     thumbPreview.style.flexWrap = 'wrap';
@@ -261,22 +261,23 @@ export function renderMessages(channelId, messagesPane) {
             .finally(() => (isLoadingOlder = false));
     });
 
-    let selectedFile = null;
     let thumbnail = null;
+    let fileUrl = null;
 
     attachButton.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', () => {
-        selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
         if (thumbnail) {
             thumbnail.remove();
+            thumbnail = null;
         }
 
-        if (!selectedFile) {
+        if (!file) {
             return;
         }
-        fileToDataUrl(selectedFile)
+        fileToDataUrl(file)
             .then((dataUrl) => {
                 const previewArea = document.createElement('div');
                 previewArea.style.display = 'flex';
@@ -294,7 +295,76 @@ export function renderMessages(channelId, messagesPane) {
                 imagePreview.style.height = '36px';
                 imagePreview.style.objectFit = 'cover';
                 imagePreview.style.borderRadius = '6px';
+
+                const imageName = document.createElement('span');
+                imageName.textContent = file.name;
+                imageName.style.fontSize = '12px';
+                imageName.style.maxWidth = '160px';
+                imageName.style.whiteSpace = 'nowrap';
+                imageName.style.overflow = 'hidden';
+                imageName.style.textOverflow = 'ellipsis';
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.textContent = '×';
+                removeButton.style.border = 'none';
+                removeButton.style.background = 'transparent';
+                removeButton.style.cursor = 'pointer';
+
+                removeButton.addEventListener('click', () => {
+                    fileInput.value = '';
+                    previewArea.remove();
+                    thumbnail = null;
+                    selectedFile = null;
+                });
+                previewArea.appendChild(imagePreview);
+                previewArea.appendChild(imageName);
+                previewArea.appendChild(removeButton);
+                thumbPreview.appendChild(previewArea);
+                thumbnail = previewArea;
+                fileUrl = dataUrl;
+            });
+    });
+    sendButton.addEventListener('click', () => {
+        const message = (messageInput.value || '').trim();
+
+        if(!text && !selectedFile) {
+            showError('You need to type a message or send an image');
+        }
+
+        sendButton.disabled = true;
+        sendMessages(channelId, message, fileUrl || null)
+            .then(() => {
+                messageInput.value = '';
+                fileInput.value = '';
+                if (thumbnail) {
+                    thumbnail.remove();
+                }
+                fileUrl = null;
+                const start = 0;
+                return getMessages(channelId, start);
             })
+            .then(({ messages }) => {
+                while (messageList.firstChild) {
+                    messageList.removeChild(messageList.firstChild);
+                }
+                messages.reverse.forEach(message => {
+                    const messageElement = buildMessage(message);
+                    messageList.appendChild(messageElement);
+                })  
+            })
+            .catch(err => {
+                showError(err.message || 'Failed to send message');
+            })
+            .then(() => {
+                sendButton.disabled = false;
+            })
+    });
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
     });
 
 }
