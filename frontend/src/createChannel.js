@@ -78,7 +78,7 @@ export function createChannel() {
                     resolve();
                 })
                 .catch(err => {
-                    showError(err.message || 'Somethign went wrong when trying to create a new channel');
+                    showError(err.message || 'Something went wrong when trying to create a new channel');
                     reject(err);
                 })
                 .finally(() => {
