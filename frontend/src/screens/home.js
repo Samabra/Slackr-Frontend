@@ -1,6 +1,6 @@
-import { BACKEND_PORT } from '../config.js';
 
-const API_BASE = `http://localhost:${BACKEND_PORT}`;
+import { createChannel } from '../createChannel.js';
+import { renderChannels } from '../helpers.js';
 
 export function renderHome({ mount, go }) {
 
@@ -20,6 +20,12 @@ export function renderHome({ mount, go }) {
     sidebar.appendChild(sideBarTitle);
     sidebar.appendChild(sideBarNote);
 
+    const createChannelButton = document.createElement('button');
+    createChannelButton.innerText = 'Create Channel';
+    createChannelButton.id = 'create-channel-button';
+    sidebar.appendChild(createChannelButton);
+
+
     const channelList = document.createElement('div');
     channelList.classList.add('channel-list');
     channelList.style.display = 'flex';
@@ -28,7 +34,6 @@ export function renderHome({ mount, go }) {
     sidebar.appendChild(channelList);
 
     const channelListPublic = document.createElement('div');
-    
     channelListPublic.style.display = 'flex';
     channelListPublic.style.flexDirection = 'column';
     channelListPublic.style.gap = '5px';
@@ -54,14 +59,9 @@ export function renderHome({ mount, go }) {
 
     const title = document.createElement('h2');
     title.innerText = 'Home';
-
+    
     const logoutButton = document.createElement('button');
     logoutButton.innerText = 'Logout';
-    logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        go('login');
-    });
-
     header.appendChild(title);
     header.appendChild(logoutButton);
 
@@ -77,6 +77,20 @@ export function renderHome({ mount, go }) {
     main.appendChild(content);
     screen.appendChild(sidebar);
     screen.appendChild(main);
-    mount.appendChild(screen);
+    mount.appendChild(screen); 
 
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        go('login');
+    });
+
+    renderChannels(channelListPublic, channelListPrivate);
+
+    createChannelButton.addEventListener('click', () => {
+        createChannel().then(() => {
+            renderChannels(channelListPublic, channelListPrivate);
+        });
+    });
 }
+
+
