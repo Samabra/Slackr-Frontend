@@ -1,6 +1,7 @@
-import { API_BASE, BACKEND_PORT } from "./config.js";
+import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { getUser } from "./helpers.js";
+import { fileToDataUrl } from "./helpers.js";
 
 function getMessages(channelId, start) {
     return fetch(`${API_BASE}/message/${channelId}`, {
@@ -44,7 +45,45 @@ function sendMessages(channelId, message, image) {
 function buildMessage(message, user) {
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'message-container';
-    messagesContainer.
+    messagesContainer.style.display = 'flex';
+    messagesContainer.style.gap = '10px';
+    messagesContainer.style.padding = '8px 0';
+    messagesContainer.style.borderBottom = '1px solid #eee';
+
+    const avatar = document.createElement('img');
+    avatar.alt = 'avatar';
+    avatar.width = 36;
+    avatar.height = 36;
+    avatar.style.borderRadius = '50%';
+
+    const fallback = 
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAzNiAzNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxOCIgY3k9IjEzIiByPSI4IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTkgMjkuNWMwLTQuNCAzLjYtOC41IDktOC41czkgNC4xIDkgOC41IiBmaWxsPSIjZGRkIi8+PC9zdmc+';
+    avatar.src = (user.image && user.image.startsWith('data:')) ? user.image : fallback;
+
+    const main = document.createElement('div');
+    main.style.flex = '1';
+
+    const head = document.createElement('div');
+    head.style.display = 'flex';
+    head.style.gap = '8px';
+    head.style.alignItems = 'baseline';
+
+    const name = document.createElement('strong');
+    name.textContent = `${user.name}`;
+
+    const time = document.createElement('span');
+    time.style.color = '#666';
+    time.textContent = message.edited ? new Date(message.editedAt).toLocaleString() : new Date(message.sentAt).toLocaleString();
+    time.style.fontSize = '12px';
+    head.appendChild(name);
+    head.appendChild(time);
+
+    const body = document.createElement('div');
+    body.style.marginTop = '4px';
+
+    const text = document.createElement('div');
+    
+
 }
 
 export function renderMessages(channelId, messagesPane) {
