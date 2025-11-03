@@ -1,5 +1,5 @@
 import { BACKEND_PORT } from '../config.js';
-
+import { showError } from '../errorPopup.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 
@@ -66,8 +66,11 @@ export function renderRegistration({ mount, go }) {
         const password = registerPasswordInput.value.trim();
         const passwordConfirm = registerPasswordConfirm.value.trim();
 
-        if (password !== passwordConfirm) {
-            errorMsg.innerText = 'Passwords are not the same';
+        if (!email || !name || !password || !passwordConfirm) {
+            showError('Please enter all fields to register');
+            return;
+        } else if (password !== passwordConfirm) {
+            showError('Passwords are not the same');
             return;
         }
         register(email, name, password, mount, go);
@@ -89,8 +92,15 @@ const register = (email, name, password, mount, go) => {
     })
         .then(res => res.json().then(data => ({ ok: res.ok, data})))
         .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Registration has failed');
+            }
             localStorage.setItem('token', data.token);
             go('home');
+        })
+        .catch(err => {
+            console.error(err);
+            showError(err.message || 'Something went wrong during registration');
         });
 
 };

@@ -1,4 +1,5 @@
 import { BACKEND_PORT } from '../config.js';
+import { showError } from '../errorPopup.js';
 
 const API_BASE = `http://localhost:${BACKEND_PORT}`;
 export function renderLogin({ mount, go }) {
@@ -43,10 +44,9 @@ export function renderLogin({ mount, go }) {
         const password = passwordInput.value.trim();
 
         if (!email || !password) {
-            errorMsg.innerText = 'Email or password required.';
+            showError('All fields required to login');
             return;
         }
-        errorMsg.innerText = '';
         validateLogin(email, password, mount, go)
     });
 };
@@ -62,16 +62,15 @@ const validateLogin = (email, password, mount, go) => {
             password: password,
         })
     })
-        .then((res) => res.text())
-        .then((data) => {
-            const decoded = JSON.parse(data);
-            localStorage.setItem('token', decoded.token);
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Incorrect email or password');
+            }
+            localStorage.setItem('token', data.token);
             go('home');
         })
         .catch((err) => {
-            const p = mount.querySelector('#error');
-            if (p) {
-                p.innerText = err.message || 'Login Failed'
-            }
+            showError(err.message || 'Incorrect email or password');
         });
 };
