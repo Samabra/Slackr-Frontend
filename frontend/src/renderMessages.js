@@ -42,7 +42,24 @@ function sendMessages(channelId, message, image) {
         })
 }
 
-function buildMessage(message) {
+function deleteMessage(channelId, messageId) {
+    return fetch(`${API_BASE}/message/${channelId}/${messageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        }) 
+}
+
+function buildMessage(message, context) {
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'message-container';
     messagesContainer.style.display = 'flex';
@@ -50,6 +67,7 @@ function buildMessage(message) {
     messagesContainer.style.padding = '8px 0';
     messagesContainer.style.borderBottom = '1px solid #eee';
     messagesContainer.style.alignItems = 'flex-start';
+    messagesContainer.dataset.messageId = String(message.id);
 
     const avatar = document.createElement('img');
     avatar.alt = 'avatar';
@@ -67,7 +85,7 @@ function buildMessage(message) {
     const head = document.createElement('div');
     head.style.display = 'flex';
     head.style.gap = '8px';
-    head.style.alignItems = 'baseline';
+    head.style.alignItems = 'center';
 
     const name = document.createElement('strong');
 
@@ -75,8 +93,17 @@ function buildMessage(message) {
     time.style.color = '#666';
     time.textContent = message.edited ? new Date(message.editedAt).toLocaleString() : new Date(message.sentAt).toLocaleString();
     time.style.fontSize = '12px';
+
+    const spacer = document.createElement('div');
+    spacer.style.flex = '1';
     head.appendChild(name);
     head.appendChild(time);
+    head.append(spacer);
+
+    const ownMessage = context && Number(context.currentUserId) === Number(message.sender);
+    if (ownMessage) {
+
+    }
 
     const body = document.createElement('div');
     body.style.marginTop = '4px';
@@ -95,9 +122,12 @@ function buildMessage(message) {
         image.style.borderRadius = '8px';
         body.append(image);
     }
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
 
     main.append(head);
     main.appendChild(body);
+
     messagesContainer.appendChild(avatar);
     messagesContainer.appendChild(main);
 
@@ -168,6 +198,7 @@ export function renderMessages(channelId, messagesPane) {
     messageInput.style.flex = '1';
     messageInput.style.resize = 'vertical';
     messageInput.style.padding = '6px';
+    messageInput.id = 'message-input';
 
     const thumbPreview = document.createElement('div');
     thumbPreview.style.display = 'flex';
@@ -193,6 +224,7 @@ export function renderMessages(channelId, messagesPane) {
     sendButton.style.display = 'flex';
     sendButton.style.alignItems = 'center';
     sendButton.style.justifyContent = 'center';
+    sendButton.id = 'message-send-button';
 
 
     const sendSVG = 'http://www.w3.org/2000/svg';
@@ -242,7 +274,7 @@ export function renderMessages(channelId, messagesPane) {
     const initialLoader = makeLoader();
     initialLoader.style.alignSelf = 'center';
     messageList.appendChild(initialLoader);
-
+    
     getMessages(channelId, start)
         .then(({ messages }) => {
             if (initialLoader.parentNode === messageList) {
@@ -257,6 +289,7 @@ export function renderMessages(channelId, messagesPane) {
             messageList.scrollTop = messageList.scrollHeight;
         })
         .catch(err => {
+            messageList.removeChild(initialLoader);
             showError(err.message || 'Failed to load messages');
         });
     function loadOlder() {
@@ -274,7 +307,6 @@ export function renderMessages(channelId, messagesPane) {
                     allMessagesLoaded = true;
                     return;
                 }
-
                 removeTopLoader();
 
                 const fragment = document.createDocumentFragment();
