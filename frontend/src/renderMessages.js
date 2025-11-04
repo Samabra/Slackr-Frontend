@@ -80,6 +80,23 @@ function updateMessages(channelId, messageId, message, image) {
         })    
 }
 
+function pinMessage(channelId, messageId) {
+    return fetch(`${API_BASE}/message/pin/${channelId}/${messageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        }) 
+}
+
 function buildMessage(message, context) {
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'message-container';
