@@ -44,7 +44,7 @@ function sendMessages(channelId, message, image) {
 
 function deleteMessage(channelId, messageId) {
     return fetch(`${API_BASE}/message/${channelId}/${messageId}`, {
-        method: 'POST',
+        method: 'DELETE',
         headers: {
             'Content-type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -57,6 +57,27 @@ function deleteMessage(channelId, messageId) {
             }
             return data;
         }) 
+}
+
+function updateMessages(channelId, messageId, message, image) {
+    return fetch(`${API_BASE}/message/${channelId}/${messageId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+            message: message,
+            image: image,
+        })
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        })    
 }
 
 function buildMessage(message, context) {
