@@ -219,20 +219,42 @@ function buildMessage(message, channelId) {
     head.appendChild(time);
     head.append(spacer);
 
+    const body = document.createElement('div');
+    body.style.marginTop = '4px';
+
+    const text = document.createElement('div');
+    text.style.margin = '0';
+    text.textContent = message.message;
+    body.appendChild(text);
+
+    if (message.image && message.image.startsWith('data:')) {
+        const image = document.createElement('img');
+        image.src = message.image;
+        image.alt = 'attachment';
+        image.className = 'message-image';
+        image.style.width = '96px';
+        image.style.height = '96px';
+        image.style.objectFit = 'cover';
+        image.style.marginTop = '6px';
+        image.style.borderRadius = '8px';
+        image.style.cursor = 'zoom-in';
+        image.addEventListener('click', () => openImageModalFromNode(image));
+        body.append(image);
+    }
+
     const reactionsContainer = document.createElement('div');
     reactionsContainer.style.display = 'flex';
     reactionsContainer.style.gap = '6px';
     reactionsContainer.style.marginTop = '6px';
     reactionsContainer.style.alignItems = 'center';
     const reactions = Array.isArray(message.reacts) ? message.reacts : [];
-
+    
     function renderReactions() {
         while (reactionsContainer.firstChild) {
             reactionsContainer.removeChild(reactionsContainer.firstChild);
         }
-
-        const { counts, mine } = computeReactionState(reactions, currentUserId, emojis);
         const emojis = ['👍','❤️','😂'];
+        const { counts, mine } = computeReactionState(reactions, currentUserId, emojis);
         emojis.forEach((emoji) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -242,7 +264,7 @@ function buildMessage(message, channelId) {
             button.style.padding = '2px 6px';
             button.style.borderRadius = '12px';
             button.style.border = '1px solid #ddd';
-            button.style.background = mine ? '#e0ffe0' : '#f8f8f8';
+            button.style.background = mine.has(emoji) ? '#e0ffe0' : '#f8f8f8';
             button.style.cursor = 'pointer';
             button.style.fontSize = '13px';
 
@@ -260,17 +282,32 @@ function buildMessage(message, channelId) {
                 const hasReacted = mine.has(emoji);
                 if (hasReacted) {
                     const index = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
-                    if (index >= 0) reactions.splice(idx, 1);
+                    if (index >= 0) reactions.splice(index, 1);
                 } else {
                     reactions.push({ user: Number(currentUserId), react: emoji });
                 }
                 renderReactions();
+                toggleReaction(channelId, message.id, emoji, !hasReacted)
+                    .then((data) => {
+                    })
+                    .catch(() => {
+                    if (hasReacted) {
+                        reactions.push({ user: Number(currentUserId), react: emoji });
+                    } else {
+                        const idx = reactions.findIndex(r =>
+                        String(r.user) === String(currentUserId) && r.react === emoji
+                        );
+                        if (idx >= 0) reactions.splice(idx, 1);
+                    }
+                    renderReactions();
+                    showError('Failed to update reaction');
+                    });
             });
-    
-            reactionsContainer.appendChild(btn);
+            reactionsContainer.appendChild(button);
         });
     }
-
+    body.appendChild(reactionsContainer);
+    renderReactions();
 
     const ownMessage = Number(currentUserId) === Number(message.sender);
     if (ownMessage) {
@@ -423,30 +460,6 @@ function buildMessage(message, channelId) {
             });
         });
     }
-
-    const body = document.createElement('div');
-    body.style.marginTop = '4px';
-
-    const text = document.createElement('div');
-    text.style.margin = '0';
-    text.textContent = message.message;
-    body.appendChild(text);
-
-    if (message.image && message.image.startsWith('data:')) {
-        const image = document.createElement('img');
-        image.src = message.image;
-        image.alt = 'attachment';
-        image.className = 'message-image';
-        image.style.width = '96px';
-        image.style.height = '96px';
-        image.style.objectFit = 'cover';
-        image.style.marginTop = '6px';
-        image.style.borderRadius = '8px';
-        image.style.cursor = 'zoom-in';
-        image.addEventListener('click', () => openImageModalFromNode(image));
-        body.append(image);
-    }
-
     main.append(head);
     main.appendChild(body);
 
