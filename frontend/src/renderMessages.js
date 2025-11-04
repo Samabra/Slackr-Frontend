@@ -129,9 +129,6 @@ export function renderMessages(channelId, messagesPane) {
     messageList.style.paddingRight = '8px';
     messageList.style.flex = '1';
 
-    const loader = makeLoader();
-    messageList.appendChild(loader);
-
     messagesPane.appendChild(messageList);
 
     const messageComposer = document.createElement('div');
@@ -222,15 +219,41 @@ export function renderMessages(channelId, messagesPane) {
 
     let isLoadingOlder = false;
     let allMessagesLoaded = false;
+    let topLoaderElement = null;
+
+
+    function showTopLoader() {
+        if (!topLoaderElement) {
+            topLoaderElement = makeLoader();
+            topLoaderElement.style.padding = '8px';
+            topLoaderElement.style.alignSelf = 'center';
+            topLoaderElement.dataset.role = 'top-loader';
+            messageList.insertBefore(topLoaderElement, messageList.firstChild);
+        }
+    }
+
+    function removeTopLoader() {
+        if (topLoaderElement && topLoaderElement.parentNode) {
+            topLoaderElement.parentNode.removeChild(topLoaderElement);
+        }
+        topLoaderElement = null;
+    }
+
+    const initialLoader = makeLoader();
+    initialLoader.style.alignSelf = 'center';
+    messageList.appendChild(initialLoader);
+
     getMessages(channelId, start)
         .then(({ messages }) => {
-            if (loader.parentNode === messageList) {
-                messageList.removeChild(loader);
+            if (initialLoader.parentNode === messageList) {
+                messageList.removeChild(initialLoader);
             }
-            messages.reverse().forEach(message => {
-                const messageElement = buildMessage(message);
-                messageList.appendChild(messageElement);
-            });
+            const fragment = document.createDocumentFragment();
+            for (let i = messages.length - 1; i >= 0; i--) {
+                fragment.appendChild(buildMessage(messages[i]));
+            }
+            messageList.appendChild(fragment);
+            start = messages.length;
             messageList.scrollTop = messageList.scrollHeight;
         })
         .catch(err => {
@@ -240,8 +263,8 @@ export function renderMessages(channelId, messagesPane) {
         if (isLoadingOlder || allMessagesLoaded) {
             return;
         }
+        showTopLoader();
         isLoadingOlder = true;
-        start += 25;
     
         const oldScrollHeight = messageList.scrollHeight;
     
@@ -251,18 +274,25 @@ export function renderMessages(channelId, messagesPane) {
                     allMessagesLoaded = true;
                     return;
                 }
-                const frag = document.createDocumentFragment();
+
+                removeTopLoader();
+
+                const fragment = document.createDocumentFragment();
                 for (let i = messages.length - 1; i >= 0; i--) {
-                    frag.appendChild(buildMessage(messages[i]));
+                    fragment.appendChild(buildMessage(messages[i]));
                 }
-    
-                messageList.insertBefore(frag, messageList.firstChild);
+                messageList.insertBefore(fragment, messageList.firstChild);
+
+                start += messages.length;
                 messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
             })
             .catch(err => {
                 showError(err.message || 'Failed to load older messages')
             })
-            .finally(() => (isLoadingOlder = false));
+            .finally(() => {
+                isLoadingOlder = false;
+                removeTopLoader();
+            });
     
     }
     messageList.addEventListener('scroll', () => {

@@ -93,3 +93,31 @@ export function getUser(userId) {
 }
 
 
+export function makeLoader() {
+    const loadingSpace = document.createElement('div');
+    loadingSpace.style.display = 'flex';
+    loadingSpace.style.justifyContent = 'center';
+    loadingSpace.style.alignItems = 'center';
+    loadingSpace.style.padding = '8px';
+    loadingSpace.style.color = '#666';
+    loadingSpace.style.fontSize = '12px';
+
+    const dot = document.createElement('div');
+    dot.style.width = '8px';
+    dot.style.height = '8px';
+    dot.style.borderRadius = '50%';
+    dot.style.border = '2px solid #ccc';
+    dot.style.borderTopColor = '#999';
+    dot.style.animation = 'spin 0.8s linear infinite';
+    loadingSpace.appendChild(dot);
+
+    if (!document.getElementById('spin-keyframes')) {
+        const style = document.createElement('style');
+        style.id = 'spin-keyframes';
+        style.textContent = `
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
+    }
+    return loadingSpace;
+}
