@@ -121,3 +121,18 @@ export function makeLoader() {
     }
     return loadingSpace;
 }
+export function getCurrentUserId() {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+  
+    try {
+      const [, payloadBase64] = token.split('.');
+      const payloadJson = atob(payloadBase64);
+      const payload = JSON.parse(payloadJson);
+  
+      return payload.userId;
+    } catch (err) {
+      console.error('Failed to decode token', err);
+      return null;
+    }
+}

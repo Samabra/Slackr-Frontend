@@ -1,7 +1,7 @@
 import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { getUser } from "./helpers.js";
-import { fileToDataUrl, makeLoader } from "./helpers.js";
+import { fileToDataUrl, makeLoader, getCurrentUserId } from "./helpers.js";
 
 function getMessages(channelId, start) {
     return fetch(`${API_BASE}/message/${channelId}?start=${start}`, {
@@ -153,7 +153,9 @@ function unReact(channelId, messageId, react) {
         });
 }
 
-function buildMessage(message, context) {
+function buildMessage(message, channelId) {
+
+    const currentUserId = getCurrentUserId();
     const messagesContainer = document.createElement('div');
     messagesContainer.className = 'message-container';
     messagesContainer.style.display = 'flex';
@@ -194,7 +196,7 @@ function buildMessage(message, context) {
     head.appendChild(time);
     head.append(spacer);
 
-    const ownMessage = context && Number(context.currentUserId) === Number(message.sender);
+    const ownMessage = Number(currentUserId) === Number(message.sender);
     if (ownMessage) {
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
@@ -227,23 +229,20 @@ function buildMessage(message, context) {
 
         deleteButton.addEventListener('click', () => {
             deleteButton.disabled = true;
-
-            deleteMessage(context.channelId, message.id)
+            deleteMessage(channelId, message.id)
                 .then(() => {
                 messagesContainer.style.transition = 'opacity 120ms ease';
                 messagesContainer.style.opacity = '0';
                 setTimeout(() => {
                     messagesContainer.remove();
-                    if (ctx.onDeleted) ctx.onDeleted(message.id);
                 }, 130);
                 })
                 .catch((err) => {
-                delBtn.disabled = false;
-                showError(err.message || 'Failed to delete message');
+                    deleteButton.disabled = false;
+                    showError(err.message || 'Failed to delete message');
                 });
-    });
-
-    head.appendChild(delBtn);
+        });
+        head.appendChild(deleteButton);
     }
 
     const body = document.createElement('div');
@@ -291,7 +290,7 @@ export function renderMessages(channelId, messagesPane) {
     while (messagesPane.firstChild) {
         messagesPane.removeChild(messagesPane.firstChild);
     }
-
+    const currentUserId = getCurrentUserId();
     const messageList = document.createElement('div');
     messageList.style.display = 'flex';
     messageList.style.flexDirection = 'column';
@@ -299,8 +298,6 @@ export function renderMessages(channelId, messagesPane) {
     messageList.style.overflowY = 'auto';
     messageList.style.paddingRight = '8px';
     messageList.style.flex = '1';
-
-    messagesPane.appendChild(messageList);
 
     const messageComposer = document.createElement('div');
     messageComposer.style.display = 'flex';
@@ -367,7 +364,6 @@ export function renderMessages(channelId, messagesPane) {
     sendButton.style.justifyContent = 'center';
     sendButton.id = 'message-send-button';
 
-
     const sendSVG = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(sendSVG, 'svg');
     svg.setAttribute('width', '18');
@@ -415,6 +411,8 @@ export function renderMessages(channelId, messagesPane) {
     const initialLoader = makeLoader();
     initialLoader.style.alignSelf = 'center';
     messageList.appendChild(initialLoader);
+
+
     
     getMessages(channelId, start)
         .then(({ messages }) => {
@@ -423,7 +421,7 @@ export function renderMessages(channelId, messagesPane) {
             }
             const fragment = document.createDocumentFragment();
             for (let i = messages.length - 1; i >= 0; i--) {
-                fragment.appendChild(buildMessage(messages[i]));
+                fragment.appendChild(buildMessage(messages[i]), channelId);
             }
             messageList.appendChild(fragment);
             start = messages.length;
@@ -452,7 +450,7 @@ export function renderMessages(channelId, messagesPane) {
 
                 const fragment = document.createDocumentFragment();
                 for (let i = messages.length - 1; i >= 0; i--) {
-                    fragment.appendChild(buildMessage(messages[i]));
+                    fragment.appendChild(buildMessage(messages[i], channelId));
                 }
                 messageList.insertBefore(fragment, messageList.firstChild);
 
@@ -562,10 +560,10 @@ export function renderMessages(channelId, messagesPane) {
                 while (messageList.firstChild) {
                     messageList.removeChild(messageList.firstChild);
                 }
-                messages.reverse().forEach(message => {
-                    const messageElement = buildMessage(message);
-                    messageList.appendChild(messageElement);
-                });
+                const fragment = document.createDocumentFragment();
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    fragment.appendChild(buildMessage(messages[i], channelId));
+                }
                 messageList.scrollTop = messageList.scrollHeight; 
             })
             .catch(err => {
