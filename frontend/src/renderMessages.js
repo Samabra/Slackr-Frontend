@@ -516,32 +516,57 @@ export function renderMessages(channelId, messagesPane) {
         const overlay = document.createElement('div');
         Object.assign(overlay.style, {
             position: 'fixed', 
-            inset: '0', background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: '9999'
+            inset: '0', 
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: '9999'
         });
         
         const frame = document.createElement('div');
-        Object.assign(frame.style, { position: 'relative', maxWidth: '90vw', maxHeight: '90vh' });
+        Object.assign(frame.style, { 
+            position: 'relative', 
+            maxWidth: '90vw', 
+            maxHeight: '90vh' 
+        });
         
         const big = document.createElement('img');
-        Object.assign(big.style, { maxWidth: '90vw', maxHeight: '90vh', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' });
+        Object.assign(big.style, { 
+            maxWidth: '90vw', 
+            maxHeight: '90vh', 
+            borderRadius: '8px', 
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        });
         
-        const btn = (txt, aria) => {
-            const b = document.createElement('button');
-            b.textContent = txt;
-            b.setAttribute('aria-label', aria);
-            Object.assign(b.style, { width: '44px', height: '44px', borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff' });
-            return b;
+        const button = (text, aria) => {
+            const btn = document.createElement('button');
+            btn.textContent = text;
+            btn.setAttribute('aria-label', aria);
+            Object.assign(btn.style, { 
+                width: '44px', 
+                height: '44px', 
+                borderRadius: '50%', 
+                border: 'none', 
+                cursor: 'pointer', 
+                background: '#fff' 
+            });
+            return btn;
         };
         
-        const closeBtn = btn('×', 'Close');
-        Object.assign(closeBtn.style, { position: 'absolute', top: '-10px', right: '-10px', width: '36px', height: '36px' });
+        const closeButton = button('×', 'Close');
+        Object.assign(closeButton.style, { position: 'absolute', top: '-10px', right: '-10px', width: '36px', height: '36px' });
         
-        const prevBtn = btn('‹', 'Previous');
-        Object.assign(prevBtn.style, { position: 'absolute', left: '-56px', top: '50%', transform: 'translateY(-50%)' });
+        const prevButton = button('‹', 'Previous');
+        Object.assign(prevButton.style, { 
+            position: 'absolute', 
+            left: '-56px', 
+            top: '50%', 
+            transform: 'translateY(-50%)' 
+        });
         
-        const nextBtn = btn('›', 'Next');
-        Object.assign(nextBtn.style, { position: 'absolute', right: '-56px', top: '50%', transform: 'translateY(-50%)' });
+        const nextButton = button('›', 'Next');
+        Object.assign(nextButton.style, { position: 'absolute', right: '-56px', top: '50%', transform: 'translateY(-50%)' });
         
         function show(i) {
             idx = (i + imageNodes.length) % imageNodes.length;
