@@ -309,7 +309,7 @@ function buildMessage(message, channelId) {
             cancelButton.style.padding = '4px 8px';
             cancelButton.style.cursor = 'pointer';
 
-            actionRow.append(saveBtn, cancelBtn);
+            actionRow.append(saveButton, cancelButton);
             body.appendChild(actionRow);
 
             cancelButton.addEventListener('click', () => {
@@ -330,15 +330,15 @@ function buildMessage(message, channelId) {
 
                 saveButton.disabled = true;
 
-                updateMessages(channelId, message.id, newText, )
+                updateMessages(channelId, message.id, newText)
                     .then(() => {
-                    const newDiv = document.createElement('div');
-                    newDiv.toextContent = newText;
-                    textarea.replaceWith(newDiv);
-                    actionRow.remove();
+                        const newDiv = document.createElement('div');
+                        newDiv.textContent = newText;
+                        textarea.replaceWith(newDiv);
+                        actionRow.remove();
 
-                    message.editedAt = new Date().toISOString();
-                    time.textContent = new Date(message.editedAt).toLocaleDateString() + ' (edited)';
+                        message.editedAt = new Date().toISOString();
+                        time.textContent = new Date(message.editedAt).toLocaleString() + ' (edited)';
                     })
                     .catch(err => {
                         showError(err.message || 'Failed to edit message');
@@ -521,14 +521,14 @@ export function renderMessages(channelId, messagesPane) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: '9999'
+            zIndex: '9999',
         });
         
         const frame = document.createElement('div');
         Object.assign(frame.style, { 
             position: 'relative', 
             maxWidth: '90vw', 
-            maxHeight: '90vh' 
+            maxHeight: '90vh',
         });
         
         const big = document.createElement('img');
@@ -549,13 +549,19 @@ export function renderMessages(channelId, messagesPane) {
                 borderRadius: '50%', 
                 border: 'none', 
                 cursor: 'pointer', 
-                background: '#fff' 
+                background: '#fff',
             });
             return btn;
         };
         
         const closeButton = button('×', 'Close');
-        Object.assign(closeButton.style, { position: 'absolute', top: '-10px', right: '-10px', width: '36px', height: '36px' });
+        Object.assign(closeButton.style, { 
+            position: 'absolute', 
+            top: '-10px', 
+            right: '-10px', 
+            width: '36px', 
+            height: '36px',
+        });
         
         const prevButton = button('‹', 'Previous');
         Object.assign(prevButton.style, { 
@@ -566,32 +572,41 @@ export function renderMessages(channelId, messagesPane) {
         });
         
         const nextButton = button('›', 'Next');
-        Object.assign(nextButton.style, { position: 'absolute', right: '-56px', top: '50%', transform: 'translateY(-50%)' });
+        Object.assign(nextButton.style, { 
+            position: 'absolute', 
+            right: '-56px', 
+            top: '50%', 
+            transform: 'translateY(-50%)',
+        });
         
         function show(i) {
-            idx = (i + imageNodes.length) % imageNodes.length;
-            big.src = imageNodes[idx].src;
+            index = (i + imageNodes.length) % imageNodes.length;
+            big.src = imageNodes[index].src;
         }
         function cleanup() {
             document.removeEventListener('keydown', onKey);
             overlay.remove();
         }
         function onKey(e) {
-            if (e.key === 'Escape') cleanup();
-            else if (e.key === 'ArrowLeft') show(idx - 1);
-            else if (e.key === 'ArrowRight') show(idx + 1);
+            if (e.key === 'Escape') {
+                cleanup();
+            } else if (e.key === 'ArrowLeft') {
+                show(index - 1);
+            } else if (e.key === 'ArrowRight') {
+                show(index + 1);
+            }
         }
         
-        prevBtn.addEventListener('click', () => show(idx - 1));
-        nextBtn.addEventListener('click', () => show(idx + 1));
-        closeBtn.addEventListener('click', cleanup);
+        prevButton.addEventListener('click', () => show(index - 1));
+        nextButton.addEventListener('click', () => show(index + 1));
+        closeButton.addEventListener('click', cleanup);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(); });
         
         frame.appendChild(big);
-        frame.appendChild(closeBtn);
+        frame.appendChild(closeButton);
         if (imageNodes.length > 1) {
-            frame.appendChild(prevBtn);
-            frame.appendChild(nextBtn);
+            frame.appendChild(prevButton);
+            frame.appendChild(nextButton);
         }
         overlay.appendChild(frame);
         document.body.appendChild(overlay);
@@ -621,8 +636,6 @@ export function renderMessages(channelId, messagesPane) {
     const initialLoader = makeLoader();
     initialLoader.style.alignSelf = 'center';
     messageList.appendChild(initialLoader);
-
-
     
     getMessages(channelId, start)
         .then(({ messages }) => {
@@ -633,9 +646,11 @@ export function renderMessages(channelId, messagesPane) {
             for (let i = messages.length - 1; i >= 0; i--) {
                 fragment.appendChild(buildMessage(messages[i], channelId));
             }
+
             messageList.appendChild(fragment);
             start = messages.length;
             messageList.scrollTop = messageList.scrollHeight;
+            refreshImageIndex();
         })
         .catch(err => {
             messageList.removeChild(initialLoader);
@@ -666,6 +681,7 @@ export function renderMessages(channelId, messagesPane) {
 
                 start += messages.length;
                 messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
+                refreshImageIndex();
             })
             .catch(err => {
                 showError(err.message || 'Failed to load older messages')
@@ -746,6 +762,13 @@ export function renderMessages(channelId, messagesPane) {
                 });
             });
     });
+
+    messageList.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target && target.tagName === 'IMG' && target.classList.contains('message-image')) {
+          openImageModalFromNode(target);
+        }
+    });
     sendButton.addEventListener('click', () => {
         const message = (messageInput.value || '').trim();
 
@@ -755,7 +778,7 @@ export function renderMessages(channelId, messagesPane) {
         }
         if (message && fileUrl) {
             showError('A message with an image must not include text. Remove one.');
-            return;x
+            return;
         }
 
         sendButton.disabled = true;
@@ -778,7 +801,9 @@ export function renderMessages(channelId, messagesPane) {
                 for (let i = messages.length - 1; i >= 0; i--) {
                     fragment.appendChild(buildMessage(messages[i], channelId));
                 }
-                messageList.scrollTop = messageList.scrollHeight; 
+                messageList.appendChild(fragment);
+                messageList.scrollTop = messageList.scrollHeight;
+                refreshImageIndex();
             })
             .catch(err => {
                 console.log('There is an error with sending messages');
