@@ -196,6 +196,75 @@ function buildMessage(message, channelId) {
     head.appendChild(time);
     head.append(spacer);
 
+
+    const emojis = ['👍','❤️','😂'];
+    const reactionsContainer = document.createElement('div');
+    reactionsContainer.style.display = 'flex';
+    reactionsContainer.style.gap = '6px';
+    reactionsContainer.style.marginTop = '6px';
+    reactionsContainer.style.alignItems = 'center';
+    const reactions = Array.isArray(message.reacts) ? message.reacts : [];
+
+    function renderReactions() {
+        while (reactionsContainer.firstChild) {
+            reactionsContainer.removeChild(reactionsContainer.firstChild);
+        }
+    
+        emojis.forEach((emoji) => {
+            const count = reactions.filter(r => r.react === emoji).length;
+            const mine = reactions.some(r => String(r.user) === String(currentUserId) && r.react === emoji);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.style.display = 'inline-flex';
+            button.style.alignItems = 'center';
+            button.style.gap = '4px';
+            button.style.padding = '2px 6px';
+            button.style.borderRadius = '12px';
+            button.style.border = '1px solid #ddd';
+            button.style.background = mine ? '#e0ffe0' : '#f8f8f8';
+            button.style.cursor = 'pointer';
+            button.style.fontSize = '13px';
+
+            const emojiSpan = document.createElement('span');
+            emojiSpan.textContent = emoji;
+    
+            const countSpan = document.createElement('span');
+            countSpan.textContent = String(count);
+            countSpan.style.opacity = count ? '1' : '0.5';
+    
+            button.appendChild(emojiSpan);
+            button.appendChild(countSpan);
+    
+            button.addEventListener('click', () => {
+                const hasReacted = mine;
+                if (hasReacted) {
+                    const idx = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
+                    if (idx >= 0) reactions.splice(idx, 1);
+                } else {
+                    reactions.push({ user: Number(currentUserId), react: emoji });
+                }
+                renderReactions();
+    
+                // API call
+                toggleReaction(channelId, message.id, emoji, !hasReacted)
+                    .catch(() => {
+                        // revert if failed
+                        if (hasReacted) {
+                            reactions.push({ user: Number(currentUserId), react: emoji });
+                        } else {
+                            const idx = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
+                            if (idx >= 0) reactions.splice(idx, 1);
+                        }
+                        renderReactions();
+                        showError('Failed to update reaction');
+                    });
+            });
+    
+            reactionsContainer.appendChild(btn);
+        });
+    }
+
+
     const ownMessage = Number(currentUserId) === Number(message.sender);
     if (ownMessage) {
         const deleteButton = document.createElement('button');
