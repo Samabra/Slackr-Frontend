@@ -248,7 +248,7 @@ function buildMessage(message, channelId) {
     reactionsContainer.style.marginTop = '6px';
     reactionsContainer.style.alignItems = 'center';
     const reactions = Array.isArray(message.reacts) ? message.reacts : [];
-    
+
     function renderReactions() {
         while (reactionsContainer.firstChild) {
             reactionsContainer.removeChild(reactionsContainer.firstChild);
@@ -386,6 +386,86 @@ function buildMessage(message, channelId) {
         editSVG.appendChild(editPath);
         editButton.appendChild(editSVG);
         head.appendChild(editButton);
+
+        const pinButton = document.createElement('button');
+        pinButton.type = 'button';
+        pinButton.className = 'message-pin-button';
+        pinButton.title = message.pinned ? 'Unpin message' : 'Pin message';
+        pinButton.setAttribute('aria-label', pinButton.title);
+        pinButton.style.border = 'none';
+        pinButton.style.background = 'transparent';
+        pinButton.style.cursor = 'pointer';
+        pinButton.style.padding = '2px';
+        pinButton.style.opacity = '0.7';
+        pinButton.onmouseenter = () => (pinButton.style.opacity = '1');
+        pinButton.onmouseleave = () => (pinButton.style.opacity = '0.7');
+
+        const svgNSPin = 'http://www.w3.org/2000/svg';
+        const svgPin = document.createElementNS(svgNSPin, 'svg');
+        svgPin.setAttribute('width', '18');
+        svgPin.setAttribute('height', '18');
+        svgPin.setAttribute('viewBox', '0 0 24 24');
+        svgPin.setAttribute('fill', 'none');
+
+        const pathPin = document.createElementNS(svgNSPin, 'path');
+        pathPin.setAttribute('d', 'M12 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z');
+        pathPin.setAttribute('stroke', message.pinned ? '#f5c518' : 'currentColor');
+        pathPin.setAttribute('stroke-width', '2');
+        pathPin.setAttribute('stroke-linecap', 'round');
+        pathPin.setAttribute('stroke-linejoin', 'round');
+        svgPin.appendChild(pathPin);
+        pinButton.appendChild(svgPin);
+
+        head.appendChild(pinButton);
+
+        if (message.pinned) {
+            messagesContainer.style.backgroundColor = '#fffbe6';
+            messagesContainer.style.borderLeft = '4px solid #f5c518';
+        }
+
+        pinButton.addEventListener('click', () => {
+            const wasPinned = !!message.pinned;
+            message.pinned = !wasPinned;
+
+            pathPin.setAttribute('stroke', message.pinned ? '#f5c518' : 'currentColor');
+            pinButton.title = message.pinned ? 'Unpin message' : 'Pin message';
+            pinButton.setAttribute('aria-label', pinButton.title);
+
+            if (message.pinned) {
+                messagesContainer.style.backgroundColor = '#fffbe6';
+                messagesContainer.style.borderLeft = '4px solid #f5c518';
+            } else {
+                messagesContainer.style.backgroundColor = '';
+                messagesContainer.style.borderLeft = '';
+            }
+            pinButton.disabled = true;
+            const action = message.pinned
+                ? pinMessage(channelId, message.id)
+                : unpinMessage(channelId, message.id);
+
+            action
+                .then(() => {
+                })
+                .catch((err) => {
+                    message.pinned = wasPinned;
+                    pathPin.setAttribute('stroke', message.pinned ? '#f5c518' : 'currentColor');
+                    pinButton.title = message.pinned ? 'Unpin message' : 'Pin message';
+                    pinButton.setAttribute('aria-label', pinButton.title);
+
+                    if (message.pinned) {
+                        messagesContainer.style.backgroundColor = '#fffbe6';
+                        messagesContainer.style.borderLeft = '4px solid #f5c518';
+                    } else {
+                        messagesContainer.style.backgroundColor = '';
+                        messagesContainer.style.borderLeft = '';
+                    }
+
+                    showError(err.message || 'Failed to toggle pin');
+                })
+                .finally(() => {
+                    pinButton.disabled = false;
+                });
+        });
 
         editButton.addEventListener('click', () => {
             const textDiv = body.querySelector('div');
