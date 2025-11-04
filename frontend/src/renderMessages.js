@@ -153,6 +153,29 @@ function unReact(channelId, messageId, react) {
         });
 }
 
+function computeReactionState(reacts, currentUserId, allEmojis) {
+    const counts = Object.fromEntries(allEmojis.map(e => [e, 0]));
+    const mine = new Set();
+    for (const r of Array.isArray(reacts) ? reacts : []) {
+      if (!r.react || !allEmojis.includes(r.react)) {
+        continue;
+      }
+      counts[r.react] = (counts[r.react] || 0) + 1;
+      if (String(r.user) === String(currentUserId)) {
+        mine.add(r.react);
+      }
+    }
+    return { counts, mine };
+}
+
+function toggleReaction(channelId, messageId, emoji, shouldAdd) {
+    if (shouldAdd) {
+        return reactMessage(channelId, messageId, emoji);
+    } else {
+        return unReact(channelId, messageId, emoji);
+    }
+}
+
 function buildMessage(message, channelId) {
 
     const currentUserId = getCurrentUserId();
@@ -196,8 +219,6 @@ function buildMessage(message, channelId) {
     head.appendChild(time);
     head.append(spacer);
 
-
-    const emojis = ['👍','❤️','😂'];
     const reactionsContainer = document.createElement('div');
     reactionsContainer.style.display = 'flex';
     reactionsContainer.style.gap = '6px';
@@ -209,10 +230,10 @@ function buildMessage(message, channelId) {
         while (reactionsContainer.firstChild) {
             reactionsContainer.removeChild(reactionsContainer.firstChild);
         }
-    
+
+        const { counts, mine } = computeReactionState(reactions, currentUserId, emojis);
+        const emojis = ['👍','❤️','😂'];
         emojis.forEach((emoji) => {
-            const count = reactions.filter(r => r.react === emoji).length;
-            const mine = reactions.some(r => String(r.user) === String(currentUserId) && r.react === emoji);
             const button = document.createElement('button');
             button.type = 'button';
             button.style.display = 'inline-flex';
@@ -229,35 +250,21 @@ function buildMessage(message, channelId) {
             emojiSpan.textContent = emoji;
     
             const countSpan = document.createElement('span');
-            countSpan.textContent = String(count);
-            countSpan.style.opacity = count ? '1' : '0.5';
+            countSpan.textContent = String(counts[emoji] || 0);
+            countSpan.style.opacity = counts[emoji] ? '1' : '0.5';
     
             button.appendChild(emojiSpan);
             button.appendChild(countSpan);
     
             button.addEventListener('click', () => {
-                const hasReacted = mine;
+                const hasReacted = mine.has(emoji);
                 if (hasReacted) {
-                    const idx = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
-                    if (idx >= 0) reactions.splice(idx, 1);
+                    const index = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
+                    if (index >= 0) reactions.splice(idx, 1);
                 } else {
                     reactions.push({ user: Number(currentUserId), react: emoji });
                 }
                 renderReactions();
-    
-                // API call
-                toggleReaction(channelId, message.id, emoji, !hasReacted)
-                    .catch(() => {
-                        // revert if failed
-                        if (hasReacted) {
-                            reactions.push({ user: Number(currentUserId), react: emoji });
-                        } else {
-                            const idx = reactions.findIndex(r => String(r.user) === String(currentUserId) && r.react === emoji);
-                            if (idx >= 0) reactions.splice(idx, 1);
-                        }
-                        renderReactions();
-                        showError('Failed to update reaction');
-                    });
             });
     
             reactionsContainer.appendChild(btn);
