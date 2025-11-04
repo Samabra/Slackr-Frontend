@@ -17,7 +17,7 @@ function getMessages(channelId, start) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        })
+        });
 }
 
 
@@ -39,7 +39,7 @@ function sendMessages(channelId, message, image) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        })
+        });
 }
 
 function deleteMessage(channelId, messageId) {
@@ -56,7 +56,7 @@ function deleteMessage(channelId, messageId) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        }) 
+        });
 }
 
 function updateMessages(channelId, messageId, message, image) {
@@ -77,7 +77,7 @@ function updateMessages(channelId, messageId, message, image) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        })    
+        });   
 }
 
 function pinMessage(channelId, messageId) {
@@ -94,7 +94,7 @@ function pinMessage(channelId, messageId) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        }) 
+        }); 
 }
 
 function unpinMessage(channelId, messageId) {
@@ -111,10 +111,47 @@ function unpinMessage(channelId, messageId) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
             return data;
-        }) 
+        });
 }
 
-
+function reactMessage(channelId, messageId, react) {
+    return fetch(`${API_BASE}/message/react/${channelId}/${messageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+            react: react,
+        })
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        }); 
+}
+function unReact(channelId, messageId, react) {
+    return fetch(`${API_BASE}/message/unreact/${channelId}/${messageId}`, {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+            react: react,
+        })
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        });
+}
 
 function buildMessage(message, context) {
     const messagesContainer = document.createElement('div');
@@ -159,7 +196,54 @@ function buildMessage(message, context) {
 
     const ownMessage = context && Number(context.currentUserId) === Number(message.sender);
     if (ownMessage) {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'message-delete-button';
+        deleteButton.title = 'Delete message';
+        deleteButton.setAttribute('aria-label', 'Delete message');
+        deleteButton.style.border = 'none';
+        deleteButton.style.background = 'transparent';
+        deleteButton.style.cursor = 'pointer';
+        deleteButton.style.padding = '2px';
+        deleteButton.style.opacity = '0.7';
+        deleteButton.onmouseenter = () => (deleteButton.style.opacity = '1');
+        deleteButton.onmouseleave = () => (deleteButton.style.opacity = '0.7');
 
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '18');
+        svg.setAttribute('height', '18');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.setAttribute('fill', 'none');
+        const path = document.createElementNS(svgNS, 'path');
+
+        path.setAttribute('d', 'M3 6h18M8 6l1-2h6l1 2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6m3 4v8m4-8v8');
+        path.setAttribute('stroke', 'currentColor');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(path);
+        deleteButton.appendChild(svg);
+
+        deleteButton.addEventListener('click', () => {
+            deleteButton.disabled = true;
+
+            deleteMessage(context.channelId, message.id)
+                .then(() => {
+                messagesContainer.style.transition = 'opacity 120ms ease';
+                messagesContainer.style.opacity = '0';
+                setTimeout(() => {
+                    messagesContainer.remove();
+                    if (ctx.onDeleted) ctx.onDeleted(message.id);
+                }, 130);
+                })
+                .catch((err) => {
+                delBtn.disabled = false;
+                showError(err.message || 'Failed to delete message');
+                });
+    });
+
+    head.appendChild(delBtn);
     }
 
     const body = document.createElement('div');
