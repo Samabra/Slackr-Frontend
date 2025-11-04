@@ -49,6 +49,7 @@ function buildMessage(message) {
     messagesContainer.style.gap = '10px';
     messagesContainer.style.padding = '8px 0';
     messagesContainer.style.borderBottom = '1px solid #eee';
+    messagesContainer.style.alignItems = 'flex-start';
 
     const avatar = document.createElement('img');
     avatar.alt = 'avatar';
@@ -61,7 +62,8 @@ function buildMessage(message) {
     
     const main = document.createElement('div');
     main.style.flex = '1';
-
+    main.style.minWidth = '0';
+    main.style.wordBreak = 'break-word';
     const head = document.createElement('div');
     head.style.display = 'flex';
     head.style.gap = '8px';
@@ -91,7 +93,7 @@ function buildMessage(message) {
         image.style.maxWidth = '100%';
         image.style.marginTop = '6px';
         image.style.borderRadius = '8px';
-        body.append(img);
+        body.append(image);
     }
 
     main.append(head);
@@ -113,6 +115,36 @@ function buildMessage(message) {
 
 }
 
+function loadOlder() {
+    if (!isLoadingOlder && !allMessagesLoaded && messageList.scrollTop <= 100) {
+        loadOlder();
+    }
+    isLoadingOlder = true;
+    start += 25;
+
+    const oldScrollHeight = messageList.scrollHeight;
+
+    getMessages(channelId, start)
+        .then(({ messages }) => {
+            if (!messages.length) {
+                allMessagesLoaded = true;
+                return;
+            }
+            const firstMessage = messageList.firstChild;
+            messages.reverse().forEach(message => {
+                const messageElement = buildMessage(message);
+                messageList.insertBefore(messageElement, messageList.firstChild);
+            });
+
+            messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
+        })
+        .catch(err => {
+            showError(err.message || 'Failed to load older messages')
+        })
+        .finally(() => (isLoadingOlder = false));
+
+}
+
 export function renderMessages(channelId, messagesPane) {
     while (messagesPane.firstChild) {
         messagesPane.removeChild(messagesPane.firstChild);
@@ -124,6 +156,7 @@ export function renderMessages(channelId, messagesPane) {
     messageList.style.height = '100%';
     messageList.style.overflowY = 'auto';
     messageList.style.paddingRight = '8px';
+    messageList.style.flex = '1';
 
     const loader = makeLoader();
     messageList.appendChild(loader);
@@ -138,6 +171,7 @@ export function renderMessages(channelId, messagesPane) {
     messageComposer.style.padding = '8px';
     messageComposer.style.marginTop = '8px';
     messageComposer.style.flexWrap = 'wrap';
+    messageComposer.style.flexShrink = '0';
 
     const attachButton = document.createElement('button');
     attachButton.textContent = '+';
@@ -233,32 +267,9 @@ export function renderMessages(channelId, messagesPane) {
         });
     
     messageList.addEventListener('scroll', () => {
-        if (messageList.scrollTop > 0 || isLoadingOlder || allMessagesLoaded) {
-            return;
+        if (!isLoadingOlder && !allMessagesLoaded && messageList.scrollTop <= 100) {
+            loadOlder();
         }
-        isLoadingOlder = true;
-        start += 25;
-
-        const oldScrollHeight = messageList.scrollHeight;
-
-        getMessages(channelId, start)
-            .then(({ messages }) => {
-                if (!messages.length) {
-                    allMessagesLoaded = true;
-                    return;
-                }
-                const firstMessage = messageList.firstChild;
-                messages.reverse().forEach(message => {
-                    const messageElement = buildMessage(message);
-                    messageList.appendChild(messageElement);
-                });
-
-                messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
-            })
-            .catch(err => {
-                showError(err.message || 'Failed to load older messages')
-            })
-            .finally(() => (isLoadingOlder = false));
     });
 
     let thumbnail = null;
@@ -311,29 +322,30 @@ export function renderMessages(channelId, messagesPane) {
                 removeButton.style.background = 'transparent';
                 removeButton.style.cursor = 'pointer';
 
-                removeButton.addEventListener('click', () => {
-                    fileInput.value = '';
-                    previewArea.remove();
-                    thumbnail = null;
-                    selectedFile = null;
-                });
                 previewArea.appendChild(imagePreview);
                 previewArea.appendChild(imageName);
                 previewArea.appendChild(removeButton);
                 thumbPreview.appendChild(previewArea);
                 thumbnail = previewArea;
                 fileUrl = dataUrl;
+                removeButton.addEventListener('click', () => {
+                    fileInput.value = '';
+                    previewArea.remove();
+                    thumbnail = null;
+                    fileUrl = null;
+                });
             });
     });
     sendButton.addEventListener('click', () => {
         const message = (messageInput.value || '').trim();
 
-        if(!text && !selectedFile) {
+        if(!message && !fileUrl) {
             showError('You need to type a message or send an image');
+            return;
         }
 
         sendButton.disabled = true;
-        sendMessages(channelId, message, fileUrl || null)
+        sendMessages(channelId, message, fileUrl || '')
             .then(() => {
                 messageInput.value = '';
                 fileInput.value = '';
@@ -348,15 +360,17 @@ export function renderMessages(channelId, messagesPane) {
                 while (messageList.firstChild) {
                     messageList.removeChild(messageList.firstChild);
                 }
-                messages.reverse.forEach(message => {
+                messages.reverse().forEach(message => {
                     const messageElement = buildMessage(message);
                     messageList.appendChild(messageElement);
-                })  
+                });
+                messageList.scrollTop = messageList.scrollHeight; 
             })
             .catch(err => {
+                console.log('There is an error with sending messages');
                 showError(err.message || 'Failed to send message');
             })
-            .then(() => {
+            .finally(() => {
                 sendButton.disabled = false;
             })
     });

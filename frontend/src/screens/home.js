@@ -77,13 +77,11 @@ export function renderHome({ mount, go }) {
     body.style.minHeight = '0';
 
     const messagesPane = document.createElement('div');
-    messagesPane.style.flex = '2';
+    messagesPane.style.flex = '3';
     messagesPane.style.padding = '16px';
     messagesPane.style.borderRight = '1px solid #eee';
-
-    const messagesPlaceHolder = document.createElement('p');
-    messagesPlaceHolder.innerText = 'Messages will go here';
-    messagesPane.appendChild(messagesPlaceHolder);
+    messagesPane.style.flexDirection = 'column';
+    messagesPane.style.height = '520px';
 
     const channelDetails = document.createElement('aside');
     channelDetails.id = 'channel-details-container';
