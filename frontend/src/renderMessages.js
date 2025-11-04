@@ -115,35 +115,6 @@ function buildMessage(message) {
 
 }
 
-function loadOlder() {
-    if (!isLoadingOlder && !allMessagesLoaded && messageList.scrollTop <= 100) {
-        loadOlder();
-    }
-    isLoadingOlder = true;
-    start += 25;
-
-    const oldScrollHeight = messageList.scrollHeight;
-
-    getMessages(channelId, start)
-        .then(({ messages }) => {
-            if (!messages.length) {
-                allMessagesLoaded = true;
-                return;
-            }
-            const firstMessage = messageList.firstChild;
-            messages.reverse().forEach(message => {
-                const messageElement = buildMessage(message);
-                messageList.insertBefore(messageElement, messageList.firstChild);
-            });
-
-            messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
-        })
-        .catch(err => {
-            showError(err.message || 'Failed to load older messages')
-        })
-        .finally(() => (isLoadingOlder = false));
-
-}
 
 export function renderMessages(channelId, messagesPane) {
     while (messagesPane.firstChild) {
@@ -265,9 +236,37 @@ export function renderMessages(channelId, messagesPane) {
         .catch(err => {
             showError(err.message || 'Failed to load messages');
         });
+    function loadOlder() {
+        if (isLoadingOlder || allMessagesLoaded) {
+            return;
+        }
+        isLoadingOlder = true;
+        start += 25;
     
+        const oldScrollHeight = messageList.scrollHeight;
+    
+        getMessages(channelId, start)
+            .then(({ messages }) => {
+                if (!messages.length) {
+                    allMessagesLoaded = true;
+                    return;
+                }
+                const frag = document.createDocumentFragment();
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    frag.appendChild(buildMessage(messages[i]));
+                }
+    
+                messageList.insertBefore(frag, messageList.firstChild);
+                messageList.scrollTop = messageList.scrollHeight - oldScrollHeight;
+            })
+            .catch(err => {
+                showError(err.message || 'Failed to load older messages')
+            })
+            .finally(() => (isLoadingOlder = false));
+    
+    }
     messageList.addEventListener('scroll', () => {
-        if (!isLoadingOlder && !allMessagesLoaded && messageList.scrollTop <= 100) {
+        if (messageList.scrollTop <= 100 && !isLoadingOlder && !allMessagesLoaded) {
             loadOlder();
         }
     });
