@@ -328,23 +328,22 @@ function buildMessage(message, channelId) {
                     return;
                 }
 
-                saveBtn.disabled = true;
+                saveButton.disabled = true;
 
-                updateMessages(channelId, message.id, newText)
+                updateMessages(channelId, message.id, newText, )
                     .then(() => {
                     const newDiv = document.createElement('div');
-                    newDiv.textContent = newText;
+                    newDiv.toextContent = newText;
                     textarea.replaceWith(newDiv);
                     actionRow.remove();
 
-                    // show edited timestamp
                     message.editedAt = new Date().toISOString();
-                    time.textContent = new Date(message.editedAt).toLocaleString() + ' (edited)';
+                    time.textContent = new Date(message.editedAt).toLocaleDateString() + ' (edited)';
                     })
                     .catch(err => {
-                    showError(err.message || 'Failed to edit message');
+                        showError(err.message || 'Failed to edit message');
                     })
-                    .finally(() => (saveBtn.disabled = false));
+                    .finally(() => (saveButton.disabled = false));
             });
         });
     }
@@ -361,13 +360,16 @@ function buildMessage(message, channelId) {
         const image = document.createElement('img');
         image.src = message.image;
         image.alt = 'attachment';
-        image.style.maxWidth = '100%';
+        image.className = 'message-image';
+        image.style.width = '96px';
+        image.style.height = '96px';
+        image.style.objectFit = 'cover';
         image.style.marginTop = '6px';
         image.style.borderRadius = '8px';
+        image.style.cursor = 'zoom-in';
+        image.addEventListener('click', () => openImageModalFromNode(image));
         body.append(image);
     }
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
 
     main.append(head);
     main.appendChild(body);
@@ -487,12 +489,23 @@ export function renderMessages(channelId, messagesPane) {
     messagesPane.appendChild(messageComposer);
 
 
-
     let start = 0;
-
     let isLoadingOlder = false;
     let allMessagesLoaded = false;
     let topLoaderElement = null;
+
+    let imageNodes = [];
+    function refreshImageIndex() {
+        imageNodes = Array.from(messageList.querySelectorAll('img.message-image'));
+    }
+
+
+    function openImageModalFromNode(node) {
+        const index = imageNodes.indexOf(node);
+        if (index >= 0) {
+            openImageModal(index);
+        }
+    }
 
 
     function showTopLoader() {
@@ -643,9 +656,13 @@ export function renderMessages(channelId, messagesPane) {
     sendButton.addEventListener('click', () => {
         const message = (messageInput.value || '').trim();
 
-        if(!message && !fileUrl) {
+        if (!message && !fileUrl) {
             showError('You need to type a message or send an image');
             return;
+        }
+        if (message && fileUrl) {
+            showError('A message with an image must not include text. Remove one.');
+            return;x
         }
 
         sendButton.disabled = true;
