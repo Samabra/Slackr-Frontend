@@ -506,6 +506,74 @@ export function renderMessages(channelId, messagesPane) {
             openImageModal(index);
         }
     }
+    function openImageModal(startIndex) {
+        if (!imageNodes.length) {
+            return;
+        }
+        
+        let index = startIndex;
+        
+        const overlay = document.createElement('div');
+        Object.assign(overlay.style, {
+            position: 'fixed', 
+            inset: '0', background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: '9999'
+        });
+        
+        const frame = document.createElement('div');
+        Object.assign(frame.style, { position: 'relative', maxWidth: '90vw', maxHeight: '90vh' });
+        
+        const big = document.createElement('img');
+        Object.assign(big.style, { maxWidth: '90vw', maxHeight: '90vh', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' });
+        
+        const btn = (txt, aria) => {
+            const b = document.createElement('button');
+            b.textContent = txt;
+            b.setAttribute('aria-label', aria);
+            Object.assign(b.style, { width: '44px', height: '44px', borderRadius: '50%', border: 'none', cursor: 'pointer', background: '#fff' });
+            return b;
+        };
+        
+        const closeBtn = btn('×', 'Close');
+        Object.assign(closeBtn.style, { position: 'absolute', top: '-10px', right: '-10px', width: '36px', height: '36px' });
+        
+        const prevBtn = btn('‹', 'Previous');
+        Object.assign(prevBtn.style, { position: 'absolute', left: '-56px', top: '50%', transform: 'translateY(-50%)' });
+        
+        const nextBtn = btn('›', 'Next');
+        Object.assign(nextBtn.style, { position: 'absolute', right: '-56px', top: '50%', transform: 'translateY(-50%)' });
+        
+        function show(i) {
+            idx = (i + imageNodes.length) % imageNodes.length;
+            big.src = imageNodes[idx].src;
+        }
+        function cleanup() {
+            document.removeEventListener('keydown', onKey);
+            overlay.remove();
+        }
+        function onKey(e) {
+            if (e.key === 'Escape') cleanup();
+            else if (e.key === 'ArrowLeft') show(idx - 1);
+            else if (e.key === 'ArrowRight') show(idx + 1);
+        }
+        
+        prevBtn.addEventListener('click', () => show(idx - 1));
+        nextBtn.addEventListener('click', () => show(idx + 1));
+        closeBtn.addEventListener('click', cleanup);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(); });
+        
+        frame.appendChild(big);
+        frame.appendChild(closeBtn);
+        if (imageNodes.length > 1) {
+            frame.appendChild(prevBtn);
+            frame.appendChild(nextBtn);
+        }
+        overlay.appendChild(frame);
+        document.body.appendChild(overlay);
+        document.addEventListener('keydown', onKey);
+        
+        show(startIndex);
+    }
 
 
     function showTopLoader() {
