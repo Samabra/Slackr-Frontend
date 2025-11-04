@@ -244,6 +244,7 @@ function buildMessage(message, channelId) {
                 });
         });
 
+        head.appendChild(deleteButton);
         const editButton = document.createElement('button');
         editButton.type = 'button';
         editButton.className = 'message-edit-button';
@@ -271,9 +272,81 @@ function buildMessage(message, channelId) {
         editPath.setAttribute('stroke-linejoin', 'round');
         editSVG.appendChild(editPath);
         editButton.appendChild(editSVG);
-        
         head.appendChild(editButton);
-        head.appendChild(deleteButton);
+
+        editButton.addEventListener('click', () => {
+            const textDiv = body.querySelector('div');
+            const oldText = textDiv.textContent.trim();
+            const textarea = document.createElement('textarea');
+
+            textarea.value = oldText;
+            textarea.style.width = '100%';
+            textarea.style.resize = 'vertical';
+            textarea.style.marginTop = '4px';
+            textarea.style.padding = '6px';
+            textDiv.replaceWith(textarea);
+            textarea.focus();
+
+            const actionRow = document.createElement('div');
+            actionRow.style.display = 'flex';
+            actionRow.style.gap = '6px';
+            actionRow.style.marginTop = '6px';
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.style.background = '#007a5a';
+            saveButton.style.color = 'white';
+            saveButton.style.border = 'none';
+            saveButton.style.borderRadius = '6px';
+            saveButton.style.padding = '4px 8px';
+            saveButton.style.cursor = 'pointer';
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.background = '#ccc';
+            cancelButton.style.border = 'none';
+            cancelButton.style.borderRadius = '6px';
+            cancelButton.style.padding = '4px 8px';
+            cancelButton.style.cursor = 'pointer';
+
+            actionRow.append(saveBtn, cancelBtn);
+            body.appendChild(actionRow);
+
+            cancelButton.addEventListener('click', () => {
+                textarea.replaceWith(textDiv);
+                actionRow.remove();
+            });
+
+            saveButton.addEventListener('click', () => {
+                const newText = textarea.value.trim();
+                if (!newText) {
+                    showError('Message cannot be empty');
+                    return;
+                }
+                if (newText === oldText) {
+                    showError('You cannot edit to the same message');
+                    return;
+                }
+
+                saveBtn.disabled = true;
+
+                updateMessages(channelId, message.id, newText)
+                    .then(() => {
+                    const newDiv = document.createElement('div');
+                    newDiv.textContent = newText;
+                    textarea.replaceWith(newDiv);
+                    actionRow.remove();
+
+                    // show edited timestamp
+                    message.editedAt = new Date().toISOString();
+                    time.textContent = new Date(message.editedAt).toLocaleString() + ' (edited)';
+                    })
+                    .catch(err => {
+                    showError(err.message || 'Failed to edit message');
+                    })
+                    .finally(() => (saveBtn.disabled = false));
+            });
+        });
     }
 
     const body = document.createElement('div');
