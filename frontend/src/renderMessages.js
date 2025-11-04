@@ -238,6 +238,7 @@ function buildMessage(message, channelId) {
                 }, 130);
                 })
                 .catch((err) => {
+                    console.log('I failed to delete messages');
                     deleteButton.disabled = false;
                     showError(err.message || 'Failed to delete message');
                 });
@@ -421,7 +422,7 @@ export function renderMessages(channelId, messagesPane) {
             }
             const fragment = document.createDocumentFragment();
             for (let i = messages.length - 1; i >= 0; i--) {
-                fragment.appendChild(buildMessage(messages[i]), channelId);
+                fragment.appendChild(buildMessage(messages[i], channelId));
             }
             messageList.appendChild(fragment);
             start = messages.length;
