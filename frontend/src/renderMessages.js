@@ -243,6 +243,36 @@ function buildMessage(message, channelId) {
                     showError(err.message || 'Failed to delete message');
                 });
         });
+
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'message-edit-button';
+        editButton.title = 'Edit message';
+        editButton.setAttribute('aria-label', 'Edit message');
+        editButton.style.border = 'none';
+        editButton.style.background = 'transparent';
+        editButton.style.cursor = 'pointer';
+        editButton.style.padding = '2px';
+        editButton.style.opacity = '0.7';
+        editButton.onmouseenter = () => (editButton.style.opacity = '1');
+        editButton.onmouseleave = () => (editButton.style.opacity = '0.7');
+
+        const svgNew = 'http://www.w3.org/2000/svg';
+        const editSVG = document.createElementNS(svgNew, 'svg');
+        editSVG.setAttribute('width', '18');
+        editSVG.setAttribute('height', '18');
+        editSVG.setAttribute('viewBox', '0 0 24 24');
+        editSVG.setAttribute('fill', 'none');
+        const editPath = document.createElementNS(svgNew, 'path');
+        editPath.setAttribute('d', 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z');
+        editPath.setAttribute('stroke', 'currentColor');
+        editPath.setAttribute('stroke-width', '2');
+        editPath.setAttribute('stroke-linecap', 'round');
+        editPath.setAttribute('stroke-linejoin', 'round');
+        editSVG.appendChild(editPath);
+        editButton.appendChild(editSVG);
+        
+        head.appendChild(editButton);
         head.appendChild(deleteButton);
     }
 
