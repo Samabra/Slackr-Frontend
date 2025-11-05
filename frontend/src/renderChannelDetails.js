@@ -2,23 +2,8 @@ import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { renderChannels } from "./helpers.js";
 import { getUser } from "./helpers.js";
-
-function getChannel(channelId) {
-    return fetch(`${API_BASE}/channel/${channelId}`, {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-    })
-        .then(res => res.json().then(data => ({ ok: res.ok, data})))
-        .then(({ ok, data }) => {
-            if (!ok) {
-                throw new Error(data.error || 'Failed to load channel details');
-            }
-            return data;
-        })
-}
+import { getChannel } from "./helpers.js";
+import { openInviteModal } from "./users.js";
 
 
 function updateChannel(channelId, name, description) {
@@ -156,11 +141,17 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             leaveButton.type = 'button';
             leaveButton.innerText = 'Leave Channel';
 
+            const inviteButton = document.createElement('button');
+            inviteButton.type = 'button';
+            inviteButton.id = 'invite-user-button';
+            inviteButton.textContent = 'Invite users';
+
             actions.appendChild(editChannel);
             actions.appendChild(saveChannel);
             actions.appendChild(cancelButton);
             channelDetails.appendChild(actions);
             channelDetails.appendChild(leaveButton);
+            channelDetails.appendChild(inviteButton);
 
             let originalName = channel.name;
             let originalDescription = channel.description;
@@ -233,6 +224,26 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                     .then(() => renderChannelDetails(channelDetails, channelId, channelLists))
                     .then(err => showError(err.message || 'Failed to leave channel'))
             });
+            inviteButton.addEventListener('click', () => {
+                let modalHost = document.getElementById('channel-invite-container');
+                if (!modalHost) {
+                    modalHost = document.createElement('div');
+                    modalHost.id = 'channel-invite-container';
+                    document.body.appendChild(modalHost);
+                }
+                try {
+                openInviteModal(channelId, {
+                    onSuccess: function () {
+                        renderChannelDetails(channelDetails, channelId, channelLists);
+                        if (channelLists && channelLists.channelListPublic && channelLists.channelListPrivate) {
+                            renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate);
+                        }
+                    }
+                });
+                } catch (e) {
+                    openInviteModal(channelId);
+                }
+            });
             return null;
         })
         .catch(err => {
@@ -255,7 +266,5 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             });
             return;
         });
-
-
 
 }
