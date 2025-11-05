@@ -42,7 +42,7 @@ function userInvite(channelId, userID) {
 
 
 function getUserProfile(userId) {
-    return fetch(`${API_BASE}/channel/${channelId}/invite`, {
+    return fetch(`${API_BASE}/user/${userId}`, {
         method: 'GET',
         headers: {
             'Content-type': 'application/json',
@@ -460,4 +460,28 @@ function openProfileModal(userId) {
     overlay.appendChild(card);
     host.appendChild(overlay);
 
+    function close() {
+        document.removeEventListener('keydown', onKey);
+        overlay.remove();
+      }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+    
+      closeBtn.addEventListener('click', close);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', onKey);
+    
+      getUserProfile(userId)
+        .then(function (u) {
+          img.src = u && u.image && u.image.startsWith('data:') ? u.image :
+                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI0OCIgY3k9IjM2IiByPSIxNiIgZmlsbD0iI0RERCIvPjxwYXRoIGQ9IkMyNCA3NC4yQzI0IDYzLjg2IDMyLjg2IDU1IDQzLjIgNTVINTIuOEM2My4xNCA1NSA3MiA2My44NiA3MiA3NC4yVjc5SDI0Vjc0LjJaIiBmaWxsPSIjREREIi8+PC9zdmc+';
+    
+          nameVal.textContent = (u && u.name) ? u.name : '(unknown)';
+          emailVal.textContent = (u && u.email) ? u.email : '(unknown)';
+          bioVal.textContent = (u && typeof u.bio === 'string' && u.bio.length) ? u.bio : '(no bio)';
+          status.textContent = '';
+        })
+        .catch(function (err) {
+          status.textContent = 'Failed to load profile';
+          showError((err && err.message) || 'Failed to load profile');
+        });
 }
