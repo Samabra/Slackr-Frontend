@@ -2,23 +2,7 @@ import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { renderChannels } from "./helpers.js";
 import { getUser } from "./helpers.js";
-
-function getChannel(channelId) {
-    return fetch(`${API_BASE}/channel/${channelId}`, {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-    })
-        .then(res => res.json().then(data => ({ ok: res.ok, data})))
-        .then(({ ok, data }) => {
-            if (!ok) {
-                throw new Error(data.error || 'Failed to load channel details');
-            }
-            return data;
-        })
-}
+import { getChannel } from "./helpers.js";
 
 
 function updateChannel(channelId, name, description) {
