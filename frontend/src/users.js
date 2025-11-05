@@ -82,3 +82,41 @@ function updateUserProfile(email, password, name, bio, image) {
             return data;
         });
 }
+
+function openInviteModal(channelId, options) {
+    const onSuccess = options && options.onSuccess;
+  
+    let host = document.getElementById('channel-invite-container');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'channel-invite-container';
+      document.body.appendChild(host);
+    }
+  
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      inset: '0',
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: '9999',
+    });
+  
+    const modal = document.createElement('div');
+    Object.assign(modal.style, {
+      width: 'min(520px, 92vw)',
+      maxHeight: '80vh',
+      overflow: 'auto',
+      background: '#fff',
+      borderRadius: '12px',
+      padding: '16px',
+      boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    });
+    
+
+}  
