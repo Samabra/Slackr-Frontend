@@ -184,10 +184,10 @@ function openInviteModal(channelId, options) {
     });
     submitButton.disabled = true;
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.textContent = 'Cancel';
-    Object.assign(cancelBtn.style, {
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.textContent = 'Cancel';
+    Object.assign(cancelButton.style, {
       padding: '8px 12px',
       border: '1px solid #ccc',
       borderRadius: '8px',
@@ -195,11 +195,18 @@ function openInviteModal(channelId, options) {
       cursor: 'pointer',
     });
   
-    footer.appendChild(submitBtn);
-    footer.appendChild(cancelBtn);
+    footer.appendChild(submitButton);
+    footer.appendChild(cancelButton);
 
     const status = document.createElement('div');
     status.style.fontSize = '13px';
     status.style.color = '#666';
 
+    modal.appendChild(header);
+    modal.appendChild(searchBox);
+    modal.appendChild(listWrap);
+    modal.appendChild(footer);
+    modal.appendChild(status);
+    overlay.appendChild(modal);
+    host.appendChild(overlay);
 }  
