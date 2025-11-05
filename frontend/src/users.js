@@ -126,11 +126,11 @@ function openInviteModal(channelId, options) {
     title.textContent = 'Invite users to channel';
     title.style.margin = '0';
 
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Close');
-    closeBtn.textContent = '×';
-    Object.assign(closeBtn.style, {
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.setAttribute('aria-label', 'Close');
+    closeButton.textContent = '×';
+    Object.assign(closeButton.style, {
         marginLeft: 'auto',
         width: '32px',
         height: '32px',
@@ -143,6 +143,63 @@ function openInviteModal(channelId, options) {
     });
 
     header.appendChild(title);
-    header.appendChild(closeBtn);
+    header.appendChild(closeButton);
+    const searchBox = document.createElement('input');
+    searchBox.type = 'text';
+    searchBox.placeholder = 'Search users by name…';
+    Object.assign(searchBox.style, {
+        padding: '8px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+    });
+
+    const listWrap = document.createElement('div');
+    Object.assign(listWrap.style, {
+        border: '1px solid #eee',
+        borderRadius: '8px',
+        padding: '8px',
+        maxHeight: '46vh',
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+    });
+
+    const footer = document.createElement('div');
+    footer.style.display = 'flex';
+    footer.style.alignItems = 'center';
+    footer.style.gap = '8px';
+
+    const submitButton = document.createElement('button');
+    submitButton.id = 'invite-submit-button'; // required by spec
+    submitButton.type = 'button';
+    submitButton.textContent = 'Invite selected';
+    Object.assign(submitButton.style, {
+        padding: '8px 12px',
+        border: 'none',
+        borderRadius: '8px',
+        background: '#007a5a',
+        color: '#fff',
+        cursor: 'pointer',
+    });
+    submitButton.disabled = true;
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = 'Cancel';
+    Object.assign(cancelBtn.style, {
+      padding: '8px 12px',
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      background: '#fff',
+      cursor: 'pointer',
+    });
+  
+    footer.appendChild(submitBtn);
+    footer.appendChild(cancelBtn);
+
+    const status = document.createElement('div');
+    status.style.fontSize = '13px';
+    status.style.color = '#666';
 
 }  
