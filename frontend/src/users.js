@@ -15,7 +15,7 @@ function getAllUsers() {
             if (!ok) {
                 throw new Error(data.error || 'Failed to load channel details');
             }
-            return data;
+            return Array.isArray(data) ? data : (data.users || []);
         });
 }
 
@@ -28,7 +28,7 @@ function userInvite(channelId, userID) {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-            userId: userId,
+            userId: userID,
         })
     })
         .then(res => res.json().then(data => ({ ok: res.ok, data})))
@@ -83,7 +83,7 @@ function updateUserProfile(email, password, name, bio, image) {
         });
 }
 
-function openInviteModal(channelId, options) {
+export function openInviteModal(channelId, options) {
     const onSuccess = options && options.onSuccess;
   
     let host = document.getElementById('channel-invite-container');
@@ -171,7 +171,7 @@ function openInviteModal(channelId, options) {
     footer.style.gap = '8px';
 
     const submitButton = document.createElement('button');
-    submitButton.id = 'invite-submit-button'; // required by spec
+    submitButton.id = 'invite-submit-button';
     submitButton.type = 'button';
     submitButton.textContent = 'Invite selected';
     Object.assign(submitButton.style, {
@@ -270,11 +270,63 @@ function openInviteModal(channelId, options) {
     searchBox.addEventListener('input', () => filterList(searchBox.value));
     status.textContent = 'Loading users…';
     let allUsers = [];
-    let memberSet = new Set();
+    let memberSet = null;
 
     getChannel(channelId)
         .then(ch => {
-        memberSet = new Set((ch.members || []).map(String));
-        return listUsers();
+            memberSet = new Set(
+                (ch.members || []).map(m => typeof m === 'object' ? String(m.id) : String(m))
+            );
+            return getAllUsers();
         })
+        .then(users => {
+            allUsers = Array.isArray(users) ? users : [];
+            const candidates = allUsers
+                .filter(u => !memberSet.has(String(u.id)))
+                .sort((a, b) => {
+                    const aName = (a.email || '').toLowerCase();
+                    const bName = (b.email || '').toLowerCase();
+                    return aName.localeCompare(bName);
+                });
+      
+            while (listWrap.firstChild) listWrap.removeChild(listWrap.firstChild);
+      
+            if (candidates.length === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'Everyone is already in this channel.';
+                empty.style.color = '#666';
+                empty.style.padding = '8px 2px';
+                listWrap.appendChild(empty);
+                status.textContent = '';
+            } else {
+                candidates.forEach(user => addRow({ id: user.id, name: user.email }));
+                status.textContent = '';
+            }
+        })
+        .catch(err => {
+            status.textContent = 'Failed to load users';
+            showError(err.message || 'Failed to load users');
+        });
+        submitButton.addEventListener('click', () => {
+            if (selected.size === 0) return;
+        
+            const ids = Array.from(selected);
+            submitButton.disabled = true;
+            status.textContent = 'Sending invites…';
+        
+            let chain = Promise.resolve();
+            ids.forEach(id => {
+                chain = chain.then(() => userInvite(channelId, id));
+            });
+            chain
+                .then(() => {
+                    if (typeof onSuccess === 'function') onSuccess();
+                        setTimeout(close, 300);
+                })
+                .catch(err => {
+                    showError(err.message);
+                    submitButton.disabled = false;
+                });
+        });
+
 }  

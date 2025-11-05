@@ -3,6 +3,7 @@ import { showError } from "./errorPopup.js";
 import { renderChannels } from "./helpers.js";
 import { getUser } from "./helpers.js";
 import { getChannel } from "./helpers.js";
+import { openInviteModal } from "./users.js";
 
 
 function updateChannel(channelId, name, description) {
@@ -145,12 +146,12 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             inviteButton.id = 'invite-user-button';
             inviteButton.textContent = 'Invite users';
 
-
             actions.appendChild(editChannel);
             actions.appendChild(saveChannel);
             actions.appendChild(cancelButton);
             channelDetails.appendChild(actions);
             channelDetails.appendChild(leaveButton);
+            channelDetails.appendChild(inviteButton);
 
             let originalName = channel.name;
             let originalDescription = channel.description;
@@ -234,14 +235,13 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                 openInviteModal(channelId, {
                     onSuccess: function () {
                         renderChannelDetails(channelDetails, channelId, channelLists);
-
                         if (channelLists && channelLists.channelListPublic && channelLists.channelListPrivate) {
                             renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate);
                         }
                     }
                 });
                 } catch (e) {
-                openInviteModal(channelId);
+                    openInviteModal(channelId);
                 }
             });
             return null;
