@@ -1,5 +1,6 @@
 import { API_BASE } from "../config.js";
 import { fileToDataUrl, getUserProfile, updateUserProfile } from "../helpers.js";
+import { getCurrentUserId } from "../helpers.js";
 
 
 export function renderProfile({mount, go}) {
@@ -96,6 +97,38 @@ export function renderProfile({mount, go}) {
     backBtn.addEventListener('click', () => go('home'));
     btnRow.appendChild(backBtn);
 
+    status.textContent = 'Loading profile...';
+
+    getUserProfile(getCurrentUserId())
+        .then(user => {
+        nameInput.value = user.name || '';
+        emailInput.value = user.email || '';
+        bioInput.value = user.bio || '';
+        if (user.image) {
+            avatarPreview.src = user.image;
+            avatarPreview.style.display = 'block';
+        }
+        status.textContent = '';
+        })
+        .catch(err => {
+        status.textContent = err.message || 'Failed to load profile';
+        status.style.color = 'red';
+        });
+
+    let imageDataUrl = null;
+    imageInput.addEventListener('change', () => {
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) return;
+        fileToDataUrl(file)
+        .then(url => {
+            imageDataUrl = url;
+            avatarPreview.src = url;
+            avatarPreview.style.display = 'block';
+        })
+        .catch(() => {
+            status.textContent = 'Failed to load image preview';
+        });
+    });
 
 }
 
