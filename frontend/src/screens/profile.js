@@ -111,8 +111,8 @@ export function renderProfile({mount, go}) {
         status.textContent = '';
         })
         .catch(err => {
-        status.textContent = err.message || 'Failed to load profile';
-        status.style.color = 'red';
+            status.textContent = err.message || 'Failed to load profile';
+            status.style.color = 'red';
         });
 
     let imageDataUrl = null;
@@ -128,6 +128,39 @@ export function renderProfile({mount, go}) {
         .catch(() => {
             status.textContent = 'Failed to load image preview';
         });
+    });
+    saveBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const name = nameInput.value.trim();
+        const bio = bioInput.value.trim();
+        const image = imageDataUrl;
+
+        saveBtn.disabled = true;
+        status.textContent = 'Saving...';
+
+        updateUserProfile(email, password, name, bio, image)
+            .then(() => {
+                status.textContent = 'Profile updated!';
+                status.style.color = 'green';
+                passwordInput.value = '';
+            })
+            .catch(err => {
+                status.textContent = err.message || 'Failed to update profile';
+                status.style.color = 'red';
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+            });
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        nameInput.value = '';
+        bioInput.value = '';
+        passwordInput.value = '';
+        imageInput.value = '';
+        avatarPreview.style.display = 'none';
+        imageDataUrl = null;
     });
 
 }

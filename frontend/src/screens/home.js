@@ -3,6 +3,8 @@ import { createChannel } from '../createChannel.js';
 import { renderChannels } from '../helpers.js';
 import { renderChannelDetails } from '../renderChannelDetails.js';
 import { renderMessages } from '../renderMessages.js';
+import { getCurrentUserId } from '../helpers.js';
+import { getUserProfile } from '../helpers.js';
 
 function channelClicks(listElement, channelDetails, channelListPublic, channelListPrivate, messagesPane) {
     listElement.addEventListener('click', (e) => {
@@ -92,6 +94,7 @@ export function renderHome({ mount, go }) {
     channelDetails.style.padding = '16px';
     channelDetails.style.border = '1px solid #eee';
 
+    
     channelClicks(channelListPublic, channelDetails, channelListPublic, channelListPrivate, messagesPane);
     channelClicks(channelListPrivate, channelDetails, channelListPublic, channelListPrivate, messagesPane);
 
@@ -101,11 +104,45 @@ export function renderHome({ mount, go }) {
 
     const title = document.createElement('h2');
     title.innerText = 'Home';
-    
+    const rightHeaderGroup = document.createElement('div');
+    rightHeaderGroup.style.display = 'flex';
+    rightHeaderGroup.style.alignItems = 'center';
+    rightHeaderGroup.style.gap = '12px';
+    const avatarButton = document.createElement('img');
+    avatarButton.style.width = '40px';
+    avatarButton.style.height = '40px';
+    avatarButton.style.borderRadius = '50%';
+    avatarButton.style.cursor = 'pointer';
+    avatarButton.style.objectFit = 'cover';
+    avatarButton.style.border = '1px solid #ccc';
+    const fallback = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjEyIiByPSI4IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTEyIDI4YzAtNC41IDQtOCA4LTggNCAwIDggMy41IDggOHoiIGZpbGw9IiNkZGQiLz48L3N2Zz4=';
+
+    avatarButton.src = fallback;
+    getUserProfile(getCurrentUserId())
+        .then(user => {
+            if (user.image && user.image.startsWith('data:')) {
+            avatarButton.src = user.image;
+            }
+        })
+        .catch(() => {
+            avatarButton.src = fallback;
+        });
+    avatarButton.addEventListener('click', () => go('profile'));
+
     const logoutButton = document.createElement('button');
     logoutButton.innerText = 'Logout';
+    logoutButton.style.padding = '6px 10px';
+    logoutButton.style.border = '1px solid #ccc';
+    logoutButton.style.borderRadius = '6px';
+    logoutButton.style.cursor = 'pointer';
+    logoutButton.style.background = '#fff';
+
+
+    rightHeaderGroup.appendChild(avatarButton);
+    rightHeaderGroup.appendChild(logoutButton);
+
     header.appendChild(title);
-    header.appendChild(logoutButton);
+    header.appendChild(rightHeaderGroup);
 
     body.appendChild(messagesPane);
     body.appendChild(channelDetails);

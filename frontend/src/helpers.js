@@ -174,7 +174,7 @@ export function getUserProfile(userId) {
 }
 
 export function updateUserProfile(email, password, name, bio, image) {
-    return fetch(`${API_BASE}/channel/${channelId}/invite`, {
+    return fetch(`${API_BASE}/user`, {
         method: 'PUT',
         headers: {
             'Content-type': 'application/json',
