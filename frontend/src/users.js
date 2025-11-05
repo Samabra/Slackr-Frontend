@@ -58,6 +58,24 @@ function getUserProfile(userId) {
         });
 }
 
+export function userProfileOpener(messagesPane) {
+    if (!messagesPane || messagesPane.__profileHandlerInstalled) {
+        return;
+    }
+    messagesPane.__profileHandlerInstalled = true;
+  
+    messagesPane.addEventListener('click', function (e) {
+      const t = e.target;
+      if (!t) return;
+      if (t.classList && t.classList.contains('message-user-name')) {
+        const userId = t.dataset.userId;
+        if (!userId) return;
+        openProfileModal(userId);
+      }
+    });
+}
+  
+
 
 function updateUserProfile(email, password, name, bio, image) {
     return fetch(`${API_BASE}/channel/${channelId}/invite`, {

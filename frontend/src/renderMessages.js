@@ -207,7 +207,10 @@ function buildMessage(message, channelId) {
     head.style.alignItems = 'center';
 
     const name = document.createElement('strong');
-
+    name.className = 'message-user-name';
+    name.dataset.userId = String(message.sender);
+    name.style.cursor = 'pointer';
+    
     const time = document.createElement('span');
     time.style.color = '#666';
     time.textContent = message.edited ? new Date(message.editedAt).toLocaleString() : new Date(message.sentAt).toLocaleString();
@@ -656,6 +659,7 @@ export function renderMessages(channelId, messagesPane) {
     messageComposer.appendChild(fileInput);
     messagesPane.appendChild(messageList);
     messagesPane.appendChild(messageComposer);
+    userProfileOpener(messagesPane);
 
 
     let start = 0;
