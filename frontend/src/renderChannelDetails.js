@@ -140,6 +140,12 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             leaveButton.type = 'button';
             leaveButton.innerText = 'Leave Channel';
 
+            const inviteButton = document.createElement('button');
+            inviteButton.type = 'button';
+            inviteButton.id = 'invite-user-button';
+            inviteButton.textContent = 'Invite users';
+
+
             actions.appendChild(editChannel);
             actions.appendChild(saveChannel);
             actions.appendChild(cancelButton);
@@ -217,6 +223,27 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
                     .then(() => renderChannelDetails(channelDetails, channelId, channelLists))
                     .then(err => showError(err.message || 'Failed to leave channel'))
             });
+            inviteButton.addEventListener('click', () => {
+                let modalHost = document.getElementById('channel-invite-container');
+                if (!modalHost) {
+                    modalHost = document.createElement('div');
+                    modalHost.id = 'channel-invite-container';
+                    document.body.appendChild(modalHost);
+                }
+                try {
+                openInviteModal(channelId, {
+                    onSuccess: function () {
+                        renderChannelDetails(channelDetails, channelId, channelLists);
+
+                        if (channelLists && channelLists.channelListPublic && channelLists.channelListPrivate) {
+                            renderChannels(channelLists.channelListPublic, channelLists.channelListPrivate);
+                        }
+                    }
+                });
+                } catch (e) {
+                openInviteModal(channelId);
+                }
+            });
             return null;
         })
         .catch(err => {
@@ -239,7 +266,5 @@ export function renderChannelDetails(channelDetails, channelId, channelLists) {
             });
             return;
         });
-
-
 
 }
