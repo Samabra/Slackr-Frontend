@@ -1,5 +1,5 @@
 import { API_BASE } from "../config.js";
-import { getUserProfile, updateUserProfile } from "../helpers.js";
+import { fileToDataUrl, getUserProfile, updateUserProfile } from "../helpers.js";
 
 
 export function renderProfile({mount, go}) {
@@ -48,8 +48,54 @@ export function renderProfile({mount, go}) {
 
     const imageInput = document.createElement('input');
     imageInput.type = 'file';
-    imageInput.accept = 'image/*';
+    imageInput.accept = 'image/';
     form.appendChild(imageInput);
+
+    const avatarPreview = document.createElement('img');
+    avatarPreview.style.width = '100px';
+    avatarPreview.style.height = '100px';
+    avatarPreview.style.borderRadius = '50%';
+    avatarPreview.style.objectFit = 'cover';
+    avatarPreview.style.display = 'none';
+    form.appendChild(avatarPreview);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.display = 'flex';
+    btnRow.style.gap = '8px';
+    container.appendChild(btnRow);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save Changes';
+    saveBtn.type = 'button';
+    saveBtn.style.padding = '8px 12px';
+    saveBtn.style.background = '#007a5a';
+    saveBtn.style.color = '#fff';
+    saveBtn.style.border = 'none';
+    saveBtn.style.borderRadius = '8px';
+    saveBtn.style.cursor = 'pointer';
+    btnRow.appendChild(saveBtn);
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.type = 'button';
+    cancelBtn.style.padding = '8px 12px';
+    cancelBtn.style.border = '1px solid #ccc';
+    cancelBtn.style.borderRadius = '8px';
+    cancelBtn.style.background = '#fff';
+    cancelBtn.style.cursor = 'pointer';
+    btnRow.appendChild(cancelBtn);
+
+    const backBtn = document.createElement('button');
+    backBtn.textContent = '← Back';
+    backBtn.type = 'button';
+    backBtn.style.padding = '8px 12px';
+    backBtn.style.border = '1px solid #ddd';
+    backBtn.style.borderRadius = '8px';
+    backBtn.style.background = '#fff';
+    backBtn.style.cursor = 'pointer';
+    backBtn.addEventListener('click', () => go('home'));
+    btnRow.appendChild(backBtn);
+
 
 }
 
