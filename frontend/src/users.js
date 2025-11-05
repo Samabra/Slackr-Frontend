@@ -410,6 +410,54 @@ function openProfileModal(userId) {
 
     head.appendChild(title);
     head.appendChild(closeBtn);
+    const img = document.createElement('img');
+    img.id = 'profile-image';
+    img.alt = 'profile';
+    Object.assign(img.style, {
+        width: '96px',
+        height: '96px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        alignSelf: 'center'
+    });
 
-    
+    const nameRow = document.createElement('div');
+    const nameLabel = document.createElement('strong');
+    nameLabel.textContent = 'Name: ';
+    const nameVal = document.createElement('span');
+    nameVal.id = 'profile-name';
+    nameRow.appendChild(nameLabel);
+    nameRow.appendChild(nameVal);
+
+    const emailRow = document.createElement('div');
+    const emailLabel = document.createElement('strong');
+    emailLabel.textContent = 'Email: ';
+    const emailVal = document.createElement('span');
+    emailVal.id = 'profile-email';
+    emailRow.appendChild(emailLabel);
+    emailRow.appendChild(emailVal);
+
+    const bioRow = document.createElement('div');
+    const bioLabel = document.createElement('strong');
+    bioLabel.textContent = 'Bio: ';
+    const bioVal = document.createElement('span');
+    bioVal.id = 'profile-bio';
+    bioRow.appendChild(bioLabel);
+    bioRow.appendChild(bioVal);
+
+    const status = document.createElement('div');
+    status.style.fontSize = '13px';
+    status.style.color = '#666';
+    status.textContent = 'Loading profile…';
+
+    card.appendChild(head);
+    card.appendChild(img);
+    card.appendChild(nameRow);
+    card.appendChild(emailRow);
+    card.appendChild(bioRow);
+    card.appendChild(status);
+
+    overlay.appendChild(card);
+    host.appendChild(overlay);
+
 }
