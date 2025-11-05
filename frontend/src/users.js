@@ -117,6 +117,32 @@ function openInviteModal(channelId, options) {
       flexDirection: 'column',
       gap: '12px',
     });
-    
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.alignItems = 'center';
+    header.style.gap = '8px';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Invite users to channel';
+    title.style.margin = '0';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '×';
+    Object.assign(closeBtn.style, {
+        marginLeft: 'auto',
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        border: 'none',
+        background: '#eee',
+        cursor: 'pointer',
+        fontSize: '18px',
+        lineHeight: '32px',
+    });
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
 
 }  
