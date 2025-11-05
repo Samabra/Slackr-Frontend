@@ -154,3 +154,45 @@ export function getChannel(channelId) {
             return data;
         })
 }
+
+
+export function getUserProfile(userId) {
+    return fetch(`${API_BASE}/user/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        });
+}
+
+export function updateUserProfile(email, password, name, bio, image) {
+    return fetch(`${API_BASE}/channel/${channelId}/invite`, {
+        method: 'PUT',
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password,
+            name: name,
+            bio: bio,
+            image: image,
+        })
+    })
+        .then(res => res.json().then(data => ({ ok: res.ok, data})))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                throw new Error(data.error || 'Failed to load channel details');
+            }
+            return data;
+        });
+}
