@@ -348,3 +348,68 @@ export function openInviteModal(channelId, options) {
         });
 
 }  
+
+
+
+function openProfileModal(userId) {
+    let host = document.getElementById('profile-container');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'profile-container';
+        document.body.appendChild(host);
+    }
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, {
+        position: 'fixed',
+        inset: '0',
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: '9999'
+    });
+
+    const card = document.createElement('div');
+    Object.assign(card.style, {
+        width: 'min(520px, 92vw)',
+        maxHeight: '80vh',
+        overflow: 'auto',
+        background: '#fff',
+        borderRadius: '12px',
+        padding: '16px',
+        boxShadow: '0 16px 40px rgba(0,0,0,0.35)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+    });
+
+    const head = document.createElement('div');
+    head.style.display = 'flex';
+    head.style.alignItems = 'center';
+    head.style.gap = '8px';
+
+    const title = document.createElement('h3');
+    title.textContent = 'User profile';
+    title.style.margin = '0';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Close');
+    Object.assign(closeBtn.style, {
+        marginLeft: 'auto',
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        border: 'none',
+        background: '#eee',
+        cursor: 'pointer',
+        fontSize: '18px',
+        lineHeight: '32px'
+    });
+
+    head.appendChild(title);
+    head.appendChild(closeBtn);
+
+    
+}

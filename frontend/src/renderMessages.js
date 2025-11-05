@@ -2,6 +2,7 @@ import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { getUser } from "./helpers.js";
 import { fileToDataUrl, makeLoader, getCurrentUserId } from "./helpers.js";
+import { userProfileOpener } from "./users.js";
 
 function getMessages(channelId, start) {
     return fetch(`${API_BASE}/message/${channelId}?start=${start}`, {
@@ -210,7 +211,7 @@ function buildMessage(message, channelId) {
     name.className = 'message-user-name';
     name.dataset.userId = String(message.sender);
     name.style.cursor = 'pointer';
-    
+
     const time = document.createElement('span');
     time.style.color = '#666';
     time.textContent = message.edited ? new Date(message.editedAt).toLocaleString() : new Date(message.sentAt).toLocaleString();
