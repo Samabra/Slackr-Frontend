@@ -209,4 +209,72 @@ function openInviteModal(channelId, options) {
     modal.appendChild(status);
     overlay.appendChild(modal);
     host.appendChild(overlay);
+
+    function close() {
+        document.removeEventListener('keydown', onKey);
+        overlay.remove();
+    }
+    function onKey(e) {
+        if (e.key === 'Escape') close();
+    }
+    closeButton.addEventListener('click', close);
+    cancelButton.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', onKey);
+
+    const selected = new Set();
+    function updateSubmitState() {
+        submitButton.disabled = selected.size === 0;
+    }
+    function addRow(user) {
+        const row = document.createElement('label');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '8px';
+        row.style.padding = '6px 4px';
+        row.style.borderRadius = '6px';
+        row.style.cursor = 'pointer';
+    
+        row.addEventListener('mouseenter', () => row.style.background = '#f7f7f7');
+        row.addEventListener('mouseleave', () => row.style.background = 'transparent');
+    
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.className = 'invite-member-checkbox';
+        cb.value = String(user.id);
+    
+        const name = document.createElement('span');
+        name.className = 'invite-member-name';
+        name.textContent = user.name;
+    
+        cb.addEventListener('change', () => {
+          if (cb.checked) selected.add(user.id);
+          else selected.delete(user.id);
+          updateSubmitState();
+        });
+    
+        row.appendChild(cb);
+        row.appendChild(name);
+        listWrap.appendChild(row);
+    }
+    function filterList(term) {
+        const rows = listWrap.children;
+        const q = (term || '').toLowerCase();
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const nameEl = row.querySelector('.invite-member-name');
+          const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+          row.style.display = name.includes(q) ? '' : 'none';
+        }
+    }
+    searchBox.addEventListener('input', () => filterList(searchBox.value));
+    status.textContent = 'Loading users…';
+    let allUsers = [];
+    let memberSet = new Set();
+
+    getChannel(channelId)
+        .then(ch => {
+        memberSet = new Set((ch.members || []).map(String));
+        return listUsers();
+        })
 }  
