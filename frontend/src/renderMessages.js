@@ -228,7 +228,6 @@ function buildMessage(message, channelId) {
         image.style.marginTop = '6px';
         image.style.borderRadius = '8px';
         image.style.cursor = 'zoom-in';
-        image.addEventListener('click', () => openImageModalFromNode(image));
         body.append(image);
     }
 
@@ -821,7 +820,7 @@ export function renderMessages(channelId, messagesPane) {
                 lastRenderedId = messages[messages.length - 1].id;
               }
             messagesPollTimer = setInterval(function () {
-                getMessages(channelId)
+                getMessages(channelId, 0)
                     .then(function ({ messages: fresh }) {
                     if (!fresh || !fresh.length) {
                         return;
@@ -843,8 +842,8 @@ export function renderMessages(channelId, messagesPane) {
                     const nearBottom = (messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight) < 20;
                 
                     const frag = document.createDocumentFragment();
-                    for (let k = 0; k < newOnes.length; k++) {
-                        frag.appendChild(buildMessage(newOnes[k], channelId));
+                    for (let i = messages.length - 1; i >= 0; i--) {
+                        frag.appendChild(buildMessage(newOnes[i], channelId));
                     }
                     messageList.appendChild(frag);
                     lastRenderedId = newOnes[newOnes.length - 1].id;
@@ -995,7 +994,7 @@ export function renderMessages(channelId, messagesPane) {
                     thumbnail.remove();
                 }
                 fileUrl = null;
-                const start = 0;
+                start = 0;
                 return getMessages(channelId, start);
             })
             .then(({ messages }) => {
@@ -1009,6 +1008,10 @@ export function renderMessages(channelId, messagesPane) {
                 messageList.appendChild(fragment);
                 messageList.scrollTop = messageList.scrollHeight;
                 refreshImageIndex();
+                start = messages.length;
+                if (messages && messages.length) {
+                    lastRenderedId = messages[messages.length - 1].id;
+                }
             })
             .catch(err => {
                 console.log('There is an error with sending messages');
