@@ -1,25 +1,11 @@
 import { API_BASE } from "./config.js";
 import { showError } from "./errorPopup.js";
 import { getUser } from "./helpers.js";
-import { fileToDataUrl, makeLoader, getCurrentUserId } from "./helpers.js";
+import { fileToDataUrl, makeLoader, getCurrentUserId, getMessages } from "./helpers.js";
 import { userProfileOpener } from "./users.js";
 
-function getMessages(channelId, start) {
-    return fetch(`${API_BASE}/message/${channelId}?start=${start}`, {
-        method: 'GET',
-        headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-    })
-        .then(res => res.json().then(data => ({ ok: res.ok, data})))
-        .then(({ ok, data }) => {
-            if (!ok) {
-                throw new Error(data.error || 'Failed to load channel details');
-            }
-            return data;
-        });
-}
+
+let messagesPollTimer = null;
 
 
 function sendMessages(channelId, message, image) {
@@ -242,7 +228,6 @@ function buildMessage(message, channelId) {
         image.style.marginTop = '6px';
         image.style.borderRadius = '8px';
         image.style.cursor = 'zoom-in';
-        image.addEventListener('click', () => openImageModalFromNode(image));
         body.append(image);
     }
 
@@ -569,6 +554,12 @@ export function renderMessages(channelId, messagesPane) {
     while (messagesPane.firstChild) {
         messagesPane.removeChild(messagesPane.firstChild);
     }
+    if (messagesPollTimer) {
+        clearInterval(messagesPollTimer);
+        messagesPollTimer = null;
+    }
+
+    let lastRenderedId = null;
     const currentUserId = getCurrentUserId();
     const messageList = document.createElement('div');
     messageList.style.display = 'flex';
@@ -825,6 +816,45 @@ export function renderMessages(channelId, messagesPane) {
             start = messages.length;
             messageList.scrollTop = messageList.scrollHeight;
             refreshImageIndex();
+            if (messages && messages.length) {
+                lastRenderedId = messages[messages.length - 1].id;
+              }
+            messagesPollTimer = setInterval(function () {
+                getMessages(channelId, 0)
+                    .then(function ({ messages: fresh }) {
+                    if (!fresh || !fresh.length) {
+                        return;
+                    }
+                    const newest = fresh[fresh.length - 1];
+                    if (!lastRenderedId) {
+                        lastRenderedId = newest.id;
+                        return;
+                    }
+                    if (String(newest.id) === String(lastRenderedId)) {
+                        return;
+                    }
+                    let i = fresh.length - 1;
+                    while (i >= 0 && String(fresh[i].id) !== String(lastRenderedId)) {
+                        i--;
+                    }
+                    const newOnes = fresh.slice(i + 1);
+                    if (!newOnes.length) return;
+                    const nearBottom = (messageList.scrollHeight - messageList.scrollTop - messageList.clientHeight) < 20;
+                
+                    const frag = document.createDocumentFragment();
+                    for (let i = messages.length - 1; i >= 0; i--) {
+                        frag.appendChild(buildMessage(newOnes[i], channelId));
+                    }
+                    messageList.appendChild(frag);
+                    lastRenderedId = newOnes[newOnes.length - 1].id;
+                    refreshImageIndex();
+                    if (nearBottom) {
+                        messageList.scrollTop = messageList.scrollHeight;
+                    }
+                    })
+                    .catch(function () {
+                    });
+            }, 2000);
         })
         .catch(err => {
             messageList.removeChild(initialLoader);
@@ -964,7 +994,7 @@ export function renderMessages(channelId, messagesPane) {
                     thumbnail.remove();
                 }
                 fileUrl = null;
-                const start = 0;
+                start = 0;
                 return getMessages(channelId, start);
             })
             .then(({ messages }) => {
@@ -978,6 +1008,10 @@ export function renderMessages(channelId, messagesPane) {
                 messageList.appendChild(fragment);
                 messageList.scrollTop = messageList.scrollHeight;
                 refreshImageIndex();
+                start = messages.length;
+                if (messages && messages.length) {
+                    lastRenderedId = messages[messages.length - 1].id;
+                }
             })
             .catch(err => {
                 console.log('There is an error with sending messages');
