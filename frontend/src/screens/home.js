@@ -154,7 +154,7 @@ export function renderHome({ mount, go }) {
 
     logoutButton.addEventListener('click', () => {
         localStorage.removeItem('token');
-        go('login');
+        go('welcome');
     });
 
     renderChannels(channelListPublic, channelListPrivate);
