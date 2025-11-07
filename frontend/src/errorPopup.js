@@ -1,3 +1,4 @@
+
 export function showError(message) {
     const existingError = document.querySelector('.error-body');
     if (existingError) {
