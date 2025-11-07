@@ -5,6 +5,7 @@ import { renderHome } from './screens/home.js';
 import { renderLogin } from './screens/login.js'
 import { renderRegistration } from './screens/registration.js';
 import { renderProfile } from './screens/profile.js';
+import { renderWelcome } from './screens/welcome.js';
 
 let TOKEN = localStorage.getItem('token');
 const mount = document.querySelector('[role="main"]');
@@ -15,6 +16,7 @@ const routes = {
     register: renderRegistration,
     home: renderHome,
     profile: renderProfile,
+    welcome: renderWelcome,
 };
 
 function go(name) {
@@ -24,7 +26,7 @@ function go(name) {
     const token = localStorage.getItem('token');
     const protectedScreen = new Set(['home', 'profile']);
     if (!token && protectedScreen.has(name))
-        name = 'register';
+        name = 'welcome';
     const screen = routes[name];
     console.log(screen);
     if (screen) {
@@ -36,5 +38,5 @@ function go(name) {
 if (TOKEN) {
     go('home');
 } else {
-    go('register');
+    go('welcome');
 }
